@@ -1,9 +1,19 @@
 #include "ft.h"
 #include "fimage.h"
 
-#include <QTime>
-
 #include <math.h>
+
+Complex::Complex()
+    : real(0.0)
+    , imag(0.0)
+{
+}
+
+Complex::Complex(float real, float imag)
+    : real(real)
+    , imag(imag)
+{
+}
 
 inline float Complex::magnitude() const
 {
@@ -33,27 +43,17 @@ FT::FT(FImage *image, QObject *parent)
     int size = image->data().size();
     Q_ASSERT(size == m_rows * m_cols);
 
-    m_values = new float[size];
+    m_imageData = new float[size];
     const uchar *values = image->data().constData();
     for (int i = 0; i < size; ++i)
-        m_values[i] = (float)values[i];
+        m_imageData[i] = (float)values[i];
 
-    QTime timer;
-    timer.start();
-    qDebug() << "Working on Fourier Transformation...";
-
-    m_fourier = calculateFourier(m_values);
-    m_magnitude = calculateMagnitude(m_fourier);
-    m_phase = calculatePhase(m_fourier);
-
-    qDebug() << "BOOM! Done.";
-    qDebug() << "It took" << timer.elapsed() << "msecs";
 }
 
 FT::~FT()
 {
-    if (m_values)
-        delete m_values;
+    if (m_imageData)
+        delete m_imageData;
 
     if (m_fourier)
         delete m_fourier;
@@ -65,6 +65,9 @@ FT::~FT()
 
 FImage FT::magnitudeImage() const
 {
+    if (!m_magnitude)
+        return FImage(m_cols, m_rows);
+
     int size = m_cols * m_rows;
     uchar *data = new uchar[size];
 
@@ -81,8 +84,12 @@ FImage FT::magnitudeImage() const
 
 FImage FT::phaseImage() const
 {
+    if (!m_phase)
+        return FImage(m_cols, m_rows);
+
     int size = m_cols * m_rows;
     uchar *data = new uchar[size];
+
     for (int i = 0; i < size; ++i) {
         float phase = m_phase[i];
         float value = phase + M_PI;
@@ -91,38 +98,6 @@ FImage FT::phaseImage() const
     }
 
     return FImage(fftshift<uchar>(data), m_cols, m_rows);
-}
-
-// TODO(pvarga): Complex array as an input is not supported yet
-Complex *FT::calculateFourier(float *input, bool inverse)
-{
-    const float dir = inverse ? 1.0 : -1.0;
-    Complex *fourier = new Complex[m_rows * m_cols];
-
-    for (int v = 0; v < m_rows; ++v) {
-        for (int u = 0; u < m_cols; ++u) {
-            float sumReal = 0.0;
-            float sumImag = 0.0;
-
-            for (int y = 0; y < m_rows; ++y) {
-                for (int x = 0; x < m_cols; ++x) {
-                    float f = (float)input[x + y * m_cols];
-                    float a = (float)u * (float)x / (float)m_cols;
-                    float b = (float)v * (float)y / (float)m_rows;
-                    float angle = dir * 2.0 * M_PI * (a + b);
-
-                    sumReal += (float)f * cos(angle);
-                    sumImag += (float)f * sin(angle);
-                }
-            }
-
-            int index = u + v * m_cols;
-            fourier[index].real = sumReal;
-            fourier[index].imag = sumImag;
-        }
-    }
-
-    return fourier;
 }
 
 float *FT::calculateMagnitude(Complex *input)

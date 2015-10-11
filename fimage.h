@@ -13,6 +13,7 @@ public:
     static FImage createFromFile(const QString &);
     static FImage rectangle(const QSize &, const QSize &);
 
+    FImage(int, int);
     FImage(uchar *, int, int);
     QVector<uchar> data() const;
 

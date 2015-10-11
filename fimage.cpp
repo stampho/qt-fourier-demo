@@ -30,6 +30,12 @@ FImage FImage::rectangle(const QSize &imageSize, const QSize &rectangleSize)
     return FImage(image);
 }
 
+FImage::FImage(int width, int height)
+    : QImage(width, height, QImage::Format_ARGB32_Premultiplied)
+{
+    fill(Qt::black);
+}
+
 FImage::FImage(const QImage &image)
     : QImage(image)
 {

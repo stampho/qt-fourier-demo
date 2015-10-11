@@ -15,13 +15,27 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     fimage.cpp \
-    ft.cpp
+    ft.cpp \
+    dftgpu.cpp \
+    dftcpu.cpp
 
 HEADERS  += mainwindow.h \
     fimage.h \
-    ft.h
+    ft.h \
+    dftgpu.h \
+    dftcpu.h
 
 FORMS    += mainwindow.ui
+
+AMDAPPSDKROOT = $$(AMDAPPSDKROOT)
+!isEmpty(AMDAPPSDKROOT) {
+    LIBS += -L$$(AMDAPPSDKROOT)lib/x86
+    INCLUDEPATH += $$(AMDAPPSDKROOT)include
+}
+
+QMAKE_CXXFLAGS += -std=c++0x
+LIBS += -lOpenCl
+DEFINES += _USE_MATH_DEFINES
 
 CONFIG(debug, debug|release) {
     DESTDIR = build/debug

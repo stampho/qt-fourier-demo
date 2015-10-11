@@ -2,7 +2,8 @@
 #include "ui_mainwindow.h"
 
 #include "fimage.h"
-#include "ft.h"
+#include "dftgpu.h"
+#include "dftcpu.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -17,7 +18,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->originalImage->setPixmap(pixmap);
     ui->originalImage->setFixedSize(pixmap.size());
 
-    FT fourier(&image);
+    //DFTCpu fourier(&image);
+    DFTGpu fourier(&image);
 
     FImage magnitudeImage = fourier.magnitudeImage();
     QPixmap magnitudePixmap = QPixmap::fromImage(magnitudeImage);
