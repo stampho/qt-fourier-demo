@@ -11,8 +11,11 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    //FImage image = FImage::createFromFile(QStringLiteral(":/images/qt-logo-128.png"));
-    FImage image = FImage::rectangle(QSize(64, 64), QSize(16, 8));
+    FImage image = FImage::createFromFile(QStringLiteral(":/images/qt-logo-128.png"));
+    //FImage image = FImage::rectangle(QSize(128, 128), QSize(16, 8));
+    //FImage image = FImage::rectangle(QSize(256, 256), QSize(16, 8));
+    //FImage image = FImage::rectangle(QSize(5, 4), QSize(3, 2));
+    //qDebug() << image;
 
     QPixmap pixmap = QPixmap::fromImage(image);
     ui->originalImage->setPixmap(pixmap);

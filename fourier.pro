@@ -35,7 +35,7 @@ AMDAPPSDKROOT = $$(AMDAPPSDKROOT)
 
 QMAKE_CXXFLAGS += -std=c++0x
 LIBS += -lOpenCl
-DEFINES += _USE_MATH_DEFINES
+DEFINES += _USE_MATH_DEFINES CL_USE_DEPRECATED_OPENCL_2_0_APIS
 
 CONFIG(debug, debug|release) {
     DESTDIR = build/debug
@@ -49,4 +49,5 @@ RCC_DIR = $${DESTDIR}/.rcc
 UI_DIR = $${DESTDIR}/.ui
 
 RESOURCES += \
-    images.qrc
+    images.qrc \
+    kernels.qrc

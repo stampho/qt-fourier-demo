@@ -34,13 +34,13 @@ Complex *DFTCpu::calculateFourier(float *input, bool inverse)
 
             for (int y = 0; y < m_rows; ++y) {
                 for (int x = 0; x < m_cols; ++x) {
-                    float f = (float)input[x + y * m_cols];
+                    uchar f = input[x + y * m_cols];
                     float a = (float)u * (float)x / (float)m_cols;
                     float b = (float)v * (float)y / (float)m_rows;
                     float angle = dir * 2.0 * M_PI * (a + b);
 
-                    sumReal += (float)f * cos(angle);
-                    sumImag += (float)f * sin(angle);
+                    sumReal += f * cos(angle);
+                    sumImag += f * sin(angle);
                 }
             }
 
