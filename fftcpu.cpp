@@ -22,26 +22,24 @@ FFTCpu::~FFTCpu()
 }
 
 // TODO(pvarga): Complex array as an input is not supported yet
-Complex *FFTCpu::calculateFourier(float *input, bool inverse)
+Complex *FFTCpu::calculateFourier(float *input, bool inverse) const
 {
-    const float dir = inverse ? 1.0 : -1.0;
-    const int length = m_rows * m_cols;
-    Complex *fourier = new Complex[length];
+    const int size = m_rows * m_cols;
+    const float norm = inverse ? 1.0 / size : 1.0;
+    Complex *fourier = new Complex[size];
 
     if (!isPowerOfTwo(m_rows) || !isPowerOfTwo(m_cols)) {
         qWarning("Image width or height is not power of 2! (%dx%d)", m_rows, m_cols);
         return fourier;
     }
 
-
-    for (int i = 0; i < length; ++i) {
+    for (int i = 0; i < size; ++i) {
         fourier[i].real = input[i];
         fourier[i].imag = 0.0;
     }
 
-    for (int i = 0; i < length; i += m_cols) {
-        fft1D(&fourier[i], (unsigned)m_cols, dir);
-    }
+    for (int i = 0; i < size; i += m_cols)
+        fft1D(&fourier[i], (unsigned)m_cols, inverse);
 
     Complex column[m_rows];
     for (int x = 0; x < m_cols; ++x) {
@@ -50,19 +48,23 @@ Complex *FFTCpu::calculateFourier(float *input, bool inverse)
             column[y] = fourier[index];
         }
 
-        fft1D(&column[0], (unsigned)m_rows, dir);
+        fft1D(&column[0], (unsigned)m_rows, inverse);
 
         for (int y = 0; y < m_rows; ++y) {
             int index = x + y * m_cols;
             fourier[index] = column[y];
+            fourier[index].real *= norm;
+            fourier[index].imag *= norm;
         }
     }
 
     return fourier;
 }
 
-void FFTCpu::fft1D(Complex *vector, unsigned n, float dir)
+void FFTCpu::fft1D(Complex *vector, unsigned n, bool inverse) const
 {
+    const float dir = inverse ? 1.0 : -1.0;
+
     revbinPermute(vector, n);
     unsigned ldn = log2(n);
 
@@ -93,7 +95,7 @@ void FFTCpu::fft1D(Complex *vector, unsigned n, float dir)
     }
 }
 
-void FFTCpu::revbinPermute(Complex *vector, unsigned n)
+void FFTCpu::revbinPermute(Complex *vector, unsigned n) const
 {
     if (n <= 2)
         return;
@@ -109,7 +111,7 @@ void FFTCpu::revbinPermute(Complex *vector, unsigned n)
     }
 }
 
-inline int FFTCpu::revbin(unsigned x, unsigned ldn)
+inline int FFTCpu::revbin(unsigned x, unsigned ldn) const
 {
     unsigned r = 0;
     for (; ldn > 0; --ldn) {
@@ -120,7 +122,7 @@ inline int FFTCpu::revbin(unsigned x, unsigned ldn)
     return r;
 }
 
-inline bool FFTCpu::isPowerOfTwo(unsigned x)
+inline bool FFTCpu::isPowerOfTwo(unsigned x) const
 {
     return ((x != 0) && !(x & (x - 1)));
 }

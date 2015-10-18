@@ -9,7 +9,7 @@ public:
     ~DFTCpu();
 
 private:
-    Complex *calculateFourier(float *input, bool inverse = false);
+    Complex *calculateFourier(float *input, bool inverse = false) const;
 };
 
 #endif // DFTCPU_H

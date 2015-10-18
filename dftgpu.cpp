@@ -8,6 +8,7 @@ DFTGpu::DFTGpu(FImage *image, QObject *parent)
     , m_clDevice(0)
     , m_clContext(0)
     , m_clQueue(0)
+    , m_clProgram(0)
     , m_clKernel(0)
 {
     bool success = false;
@@ -40,12 +41,15 @@ DFTGpu::DFTGpu(FImage *image, QObject *parent)
 
 DFTGpu::~DFTGpu()
 {
+    clReleaseProgram(m_clProgram);
+    clReleaseKernel(m_clKernel);
+    clReleaseCommandQueue(m_clQueue);
+    clReleaseContext(m_clContext);
 }
 
-Complex *DFTGpu::calculateFourier(float *input, bool inverse)
+// TODO(pvarga): Complex array as an input is not supported yet
+Complex *DFTGpu::calculateFourier(float *input, bool inverse) const
 {
-    Q_UNUSED(inverse);
-
     Complex *fourier = new Complex[m_rows * m_cols];
     cl_int error;
 
@@ -86,9 +90,11 @@ Complex *DFTGpu::calculateFourier(float *input, bool inverse)
         return fourier;
     }
 
+    int inv = (int)inverse;
     error |= clSetKernelArg(m_clKernel, 0, sizeof(cl_mem), (void *) &clInput);
-    error |= clSetKernelArg(m_clKernel, 1, sizeof(cl_mem), (void *) &clOutReal);
-    error |= clSetKernelArg(m_clKernel, 2, sizeof(cl_mem), (void *) &clOutImag);
+    error |= clSetKernelArg(m_clKernel, 1, sizeof(int), (void *) &inv);
+    error |= clSetKernelArg(m_clKernel, 2, sizeof(cl_mem), (void *) &clOutReal);
+    error |= clSetKernelArg(m_clKernel, 3, sizeof(cl_mem), (void *) &clOutImag);
 
     if (error != CL_SUCCESS) {
         qWarning("Error while setting OpenCL Kernel Arguments: %d", error);
@@ -112,6 +118,10 @@ Complex *DFTGpu::calculateFourier(float *input, bool inverse)
 
     for (int i = 0; i < m_rows * m_cols; ++i)
         fourier[i] = Complex(real[i], imag[i]);
+
+    clReleaseMemObject(clInput);
+    clReleaseMemObject(clOutReal);
+    clReleaseMemObject(clOutImag);
 
     return fourier;
 }
@@ -179,25 +189,25 @@ bool DFTGpu::createKernel(const QString &kernelId, const QString &kernelPath)
 
     const char *sources[1] = { kernelSource.toLocal8Bit().data() };
     size_t lengths[1] = { (size_t)kernelSource.length() };
-    cl_program program = clCreateProgramWithSource(m_clContext, 1, sources, lengths, &clError);
-    if (clError != CL_SUCCESS || !program) {
+    m_clProgram = clCreateProgramWithSource(m_clContext, 1, sources, lengths, &clError);
+    if (clError != CL_SUCCESS || !m_clProgram) {
         qWarning("Error while creating OpenCL Program: %d", clError);
         return false;
     }
 
-    clError = clBuildProgram(program, 0, 0, 0, 0, 0);
+    clError = clBuildProgram(m_clProgram, 0, 0, 0, 0, 0);
     if (clError != CL_SUCCESS) {
         size_t len;
         char buffer[2048];
 
-        clGetProgramBuildInfo(program, m_clDevice, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &len);
+        clGetProgramBuildInfo(m_clProgram, m_clDevice, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &len);
         qDebug() << buffer;
 
         qWarning("Error while building OpenCL Program: %d", clError);
         return false;
     }
 
-    m_clKernel = clCreateKernel(program, kernelId.toLocal8Bit().data(), &clError);
+    m_clKernel = clCreateKernel(m_clProgram, kernelId.toLocal8Bit().data(), &clError);
     if (clError != CL_SUCCESS) {
         qWarning("Error while creating OpenCL Kernel: %d", clError);
         return false;

@@ -21,7 +21,7 @@ inline float Complex::magnitude() const
 }
 inline float Complex::phase() const
 {
-    return atan(imag / real);
+    return atan2(imag, real);
 }
 
 QDebug operator<<(QDebug debug, const Complex &c)
@@ -47,7 +47,6 @@ FT::FT(FImage *image, QObject *parent)
     const uchar *values = image->data().constData();
     for (int i = 0; i < size; ++i)
         m_imageData[i] = (float)values[i];
-
 }
 
 FT::~FT()
@@ -82,25 +81,7 @@ FImage FT::magnitudeImage() const
     return FImage(fftshift<uchar>(data), m_cols, m_rows);
 }
 
-FImage FT::phaseImage() const
-{
-    if (!m_phase)
-        return FImage(m_cols, m_rows);
-
-    int size = m_cols * m_rows;
-    uchar *data = new uchar[size];
-
-    for (int i = 0; i < size; ++i) {
-        float phase = m_phase[i];
-        float value = phase + M_PI;
-        value *= 255.0/(2 * M_PI);
-        data[i] = (uchar)value;
-    }
-
-    return FImage(fftshift<uchar>(data), m_cols, m_rows);
-}
-
-float *FT::calculateMagnitude(Complex *input)
+float *FT::calculateMagnitude(Complex *input) const
 {
     int size = m_rows * m_cols;
     float *magnitude = new float[size];
@@ -111,7 +92,46 @@ float *FT::calculateMagnitude(Complex *input)
     return magnitude;
 }
 
-float *FT::calculatePhase(Complex *input)
+FImage FT::reconstructFromMagnitude() const
+{
+    if (!m_magnitude)
+        return FImage(m_cols, m_rows);
+
+    int size = m_cols * m_rows;
+    uchar *data = new uchar[size];
+
+    Complex *rec = calculateFourier(m_magnitude, true);
+    float *recMagnitude = calculateMagnitude(rec);
+
+    for (int i = 0; i < size; ++i) {
+        float value = recMagnitude[i];
+        if (value > 255.0)
+            value = 255.0;
+        data[i] = (uchar)value;
+    }
+
+    return FImage(data, m_cols, m_rows);
+}
+
+
+FImage FT::phaseImage() const
+{
+    if (!m_phase)
+        return FImage(m_cols, m_rows);
+
+    int size = m_cols * m_rows;
+    uchar *data = new uchar[size];
+
+    for (int i = 0; i < size; ++i) {
+        float value = m_phase[i] + M_PI;
+        value *= 255.0/(2.0 * M_PI);
+        data[i] = (uchar)value;
+    }
+
+    return FImage(fftshift<uchar>(data), m_cols, m_rows);
+}
+
+float *FT::calculatePhase(Complex *input) const
 {
     int size = m_rows * m_cols;
     float *phase = new float[size];
@@ -120,6 +140,26 @@ float *FT::calculatePhase(Complex *input)
         phase[i] = input[i].phase();
 
     return phase;
+}
+
+FImage FT::reconstructFromPhase() const
+{
+    if (!m_phase)
+        return FImage(m_cols, m_rows);
+
+    int size = m_cols * m_rows;
+    uchar *data = new uchar[size];
+
+    Complex *rec = calculateFourier(m_phase, true);
+    float *recPhase = calculatePhase(rec);
+
+    for (int i = 0; i < size; ++i) {
+        float value = recPhase[i] + M_PI;
+        value *= 255.0/(2 * M_PI);
+        data[i] = (uchar)value;
+    }
+
+    return FImage(data, m_cols, m_rows);
 }
 
 template <typename T>

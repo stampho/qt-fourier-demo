@@ -11,7 +11,7 @@ public:
     ~DFTGpu();
 
 private:
-    Complex *calculateFourier(float *input, bool inverse = false);
+    Complex *calculateFourier(float *input, bool inverse = false) const;
 
     bool initOpenCL();
     bool createKernel(const QString &, const QString &);
@@ -20,6 +20,7 @@ private:
     cl_device_id m_clDevice;
     cl_context m_clContext;
     cl_command_queue m_clQueue;
+    cl_program m_clProgram;
     cl_kernel m_clKernel;
 };
 

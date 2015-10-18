@@ -9,12 +9,12 @@ public:
     ~FFTCpu();
 
 private:
-    Complex *calculateFourier(float *input, bool inverse = false);
+    Complex *calculateFourier(float *input, bool inverse = false) const;
 
-    void fft1D(Complex *, unsigned, float);
-    void revbinPermute(Complex *, unsigned);
-    inline int revbin(unsigned, unsigned);
-    inline bool isPowerOfTwo(unsigned);
+    void fft1D(Complex *, unsigned, bool) const;
+    void revbinPermute(Complex *, unsigned) const;
+    inline int revbin(unsigned, unsigned) const;
+    inline bool isPowerOfTwo(unsigned) const;
 };
 
 #endif // FFTCPU_H

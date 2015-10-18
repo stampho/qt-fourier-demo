@@ -26,12 +26,14 @@ public:
     virtual ~FT();
 
     FImage magnitudeImage() const;
+    FImage reconstructFromMagnitude() const;
     FImage phaseImage() const;
+    FImage reconstructFromPhase() const;
 
 protected:
-    virtual Complex *calculateFourier(float *input, bool inverse) = 0;
-    float *calculateMagnitude(Complex *);
-    float *calculatePhase(Complex *);
+    virtual Complex *calculateFourier(float *input, bool inverse) const = 0;
+    float *calculateMagnitude(Complex *) const;
+    float *calculatePhase(Complex *) const;
 
     template <typename T> T *fftshift(const T *input, bool inverse = false) const;
 

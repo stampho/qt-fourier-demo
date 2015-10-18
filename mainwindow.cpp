@@ -32,10 +32,20 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->magnitudeImageRef->setPixmap(magnitudePixmapRef);
     ui->magnitudeImageRef->setFixedSize(magnitudePixmapRef.size());
 
+    FImage recMagnitudeImageRef = fourierRef.reconstructFromMagnitude();
+    QPixmap recMagnitudePixmapRef = QPixmap::fromImage(recMagnitudeImageRef);
+    ui->recMagnitudeImageRef->setPixmap(recMagnitudePixmapRef);
+    ui->recMagnitudeImageRef->setFixedSize(recMagnitudePixmapRef.size());
+
     FImage phaseImageRef = fourierRef.phaseImage();
     QPixmap phasePixmapRef = QPixmap::fromImage(phaseImageRef);
     ui->phaseImageRef->setPixmap(phasePixmapRef);
     ui->phaseImageRef->setFixedSize(phasePixmapRef.size());
+
+    FImage recPhaseImageRef = fourierRef.reconstructFromPhase();
+    QPixmap recPhasePixmapRef = QPixmap::fromImage(recPhaseImageRef);
+    ui->recPhaseImageRef->setPixmap(recPhasePixmapRef);
+    ui->recPhaseImageRef->setFixedSize(recPhasePixmapRef.size());
 
     FFTCpu fourierMod(&image);
 
@@ -44,10 +54,20 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->magnitudeImageMod->setPixmap(magnitudePixmapMod);
     ui->magnitudeImageMod->setFixedSize(magnitudePixmapMod.size());
 
+    FImage recMagnitudeImageMod = fourierMod.reconstructFromMagnitude();
+    QPixmap recMagnitudePixmapMod = QPixmap::fromImage(recMagnitudeImageMod);
+    ui->recMagnitudeImageMod->setPixmap(recMagnitudePixmapMod);
+    ui->recMagnitudeImageMod->setFixedSize(recMagnitudePixmapMod.size());
+
     FImage phaseImageMod = fourierMod.phaseImage();
     QPixmap phasePixmapMod = QPixmap::fromImage(phaseImageMod);
     ui->phaseImageMod->setPixmap(phasePixmapMod);
     ui->phaseImageMod->setFixedSize(phasePixmapMod.size());
+
+    FImage recPhaseImageMod = fourierMod.reconstructFromPhase();
+    QPixmap recPhasePixmapMod = QPixmap::fromImage(recPhaseImageMod);
+    ui->recPhaseImageMod->setPixmap(recPhasePixmapMod);
+    ui->recPhaseImageMod->setFixedSize(recPhasePixmapMod.size());
 }
 
 MainWindow::~MainWindow()
