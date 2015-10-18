@@ -4,6 +4,7 @@
 #include "fimage.h"
 #include "dftgpu.h"
 #include "dftcpu.h"
+#include "fftcpu.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -14,25 +15,39 @@ MainWindow::MainWindow(QWidget *parent) :
     FImage image = FImage::createFromFile(QStringLiteral(":/images/qt-logo-128.png"));
     //FImage image = FImage::rectangle(QSize(128, 128), QSize(16, 8));
     //FImage image = FImage::rectangle(QSize(256, 256), QSize(16, 8));
-    //FImage image = FImage::rectangle(QSize(5, 4), QSize(3, 2));
+    //FImage image = FImage::rectangle(QSize(4, 4), QSize(2, 2));
     //qDebug() << image;
 
     QPixmap pixmap = QPixmap::fromImage(image);
-    ui->originalImage->setPixmap(pixmap);
-    ui->originalImage->setFixedSize(pixmap.size());
+    ui->originalImageRef->setPixmap(pixmap);
+    ui->originalImageRef->setFixedSize(pixmap.size());
+    ui->originalImageMod->setPixmap(pixmap);
+    ui->originalImageMod->setFixedSize(pixmap.size());
 
-    //DFTCpu fourier(&image);
-    DFTGpu fourier(&image);
+    //DFTCpu fourierRef(&image);
+    DFTGpu fourierRef(&image);
 
-    FImage magnitudeImage = fourier.magnitudeImage();
-    QPixmap magnitudePixmap = QPixmap::fromImage(magnitudeImage);
-    ui->magnitudeImage->setPixmap(magnitudePixmap);
-    ui->magnitudeImage->setFixedSize(magnitudePixmap.size());
+    FImage magnitudeImageRef = fourierRef.magnitudeImage();
+    QPixmap magnitudePixmapRef = QPixmap::fromImage(magnitudeImageRef);
+    ui->magnitudeImageRef->setPixmap(magnitudePixmapRef);
+    ui->magnitudeImageRef->setFixedSize(magnitudePixmapRef.size());
 
-    FImage phaseImage = fourier.phaseImage();
-    QPixmap phasePixmap = QPixmap::fromImage(phaseImage);
-    ui->phaseImage->setPixmap(phasePixmap);
-    ui->phaseImage->setFixedSize(phasePixmap.size());
+    FImage phaseImageRef = fourierRef.phaseImage();
+    QPixmap phasePixmapRef = QPixmap::fromImage(phaseImageRef);
+    ui->phaseImageRef->setPixmap(phasePixmapRef);
+    ui->phaseImageRef->setFixedSize(phasePixmapRef.size());
+
+    FFTCpu fourierMod(&image);
+
+    FImage magnitudeImageMod = fourierMod.magnitudeImage();
+    QPixmap magnitudePixmapMod = QPixmap::fromImage(magnitudeImageMod);
+    ui->magnitudeImageMod->setPixmap(magnitudePixmapMod);
+    ui->magnitudeImageMod->setFixedSize(magnitudePixmapMod.size());
+
+    FImage phaseImageMod = fourierMod.phaseImage();
+    QPixmap phasePixmapMod = QPixmap::fromImage(phaseImageMod);
+    ui->phaseImageMod->setPixmap(phasePixmapMod);
+    ui->phaseImageMod->setFixedSize(phasePixmapMod.size());
 }
 
 MainWindow::~MainWindow()

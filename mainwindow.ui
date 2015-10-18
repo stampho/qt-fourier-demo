@@ -15,6 +15,60 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="1">
+     <widget class="QWidget" name="viewRef" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QLabel" name="originalImageRef">
+         <property name="text">
+          <string>No Image Loaded</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="magnitudeImageRef">
+         <property name="text">
+          <string>No Image Loaded</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="phaseImageRef">
+         <property name="text">
+          <string>No Image Loaded</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="1" column="3">
+     <widget class="QWidget" name="viewMod" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QLabel" name="originalImageMod">
+         <property name="text">
+          <string>No Image Loaded</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="magnitudeImageMod">
+         <property name="text">
+          <string>No Image Loaded</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="phaseImageMod">
+         <property name="text">
+          <string>No Image Loaded</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
     <item row="0" column="1">
      <spacer name="verticalSpacer">
       <property name="orientation">
@@ -41,34 +95,7 @@
       </property>
      </spacer>
     </item>
-    <item row="1" column="1">
-     <widget class="QWidget" name="view" native="true">
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QLabel" name="originalImage">
-         <property name="text">
-          <string>No Image Loaded</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="magnitudeImage">
-         <property name="text">
-          <string>No Image Loaded</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="phaseImage">
-         <property name="text">
-          <string>No Image Loaded</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="1" column="2">
+    <item row="1" column="4">
      <spacer name="horizontalSpacer_2">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
@@ -90,6 +117,22 @@
        <size>
         <width>20</width>
         <height>116</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="1" column="2">
+     <spacer name="horizontalSpacer_3">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Maximum</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>10</width>
+        <height>20</height>
        </size>
       </property>
      </spacer>

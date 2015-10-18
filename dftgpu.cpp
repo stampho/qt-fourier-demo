@@ -28,7 +28,7 @@ DFTGpu::DFTGpu(FImage *image, QObject *parent)
 
     QTime timer;
     timer.start();
-    qDebug() << "[GPU] Working on Fourier Transformation...";
+    qDebug() << "[GPU] Working on Discrete Fourier Transformation...";
 
     m_fourier = calculateFourier(m_imageData);
     m_magnitude = calculateMagnitude(m_fourier);

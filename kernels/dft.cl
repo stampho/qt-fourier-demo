@@ -25,7 +25,7 @@ __kernel void dft(__constant float *input,
         }
     }
 
-    int index = v + u * cols;
+    int index = u + v * cols;
     outReal[index] = sumReal;
     outImag[index] = sumImag;
 }

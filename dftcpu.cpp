@@ -7,7 +7,7 @@ DFTCpu::DFTCpu(FImage *image, QObject *parent)
 {
     QTime timer;
     timer.start();
-    qDebug() << "[CPU] Working on Fourier Transformation...";
+    qDebug() << "[CPU] Working on Discrete Fourier Transformation...";
 
     m_fourier = calculateFourier(m_imageData);
     m_magnitude = calculateMagnitude(m_fourier);

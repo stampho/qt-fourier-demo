@@ -17,13 +17,15 @@ SOURCES += main.cpp\
     fimage.cpp \
     ft.cpp \
     dftgpu.cpp \
-    dftcpu.cpp
+    dftcpu.cpp \
+    fftcpu.cpp
 
 HEADERS  += mainwindow.h \
     fimage.h \
     ft.h \
     dftgpu.h \
-    dftcpu.h
+    dftcpu.h \
+    fftcpu.h
 
 FORMS    += mainwindow.ui
 
