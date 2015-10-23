@@ -35,8 +35,14 @@ AMDAPPSDKROOT = $$(AMDAPPSDKROOT)
     INCLUDEPATH += $$(AMDAPPSDKROOT)include
 }
 
+CUDA_PATH = $$(CUDA_PATH)
+!isEmpty(CUDA_PATH) {
+    LIBS += -L$$(CUDA_PATH)/lib/Win32
+    INCLUDEPATH += $$(CUDA_PATH)/include
+}
+
 QMAKE_CXXFLAGS += -std=c++0x
-LIBS += -lOpenCl
+LIBS += -lOpenCL
 DEFINES += _USE_MATH_DEFINES CL_USE_DEPRECATED_OPENCL_2_0_APIS
 
 CONFIG(debug, debug|release) {
