@@ -18,14 +18,18 @@ SOURCES += main.cpp\
     ft.cpp \
     dftgpu.cpp \
     dftcpu.cpp \
-    fftcpu.cpp
+    fftcpu.cpp \
+    gpu.cpp \
+    clinfo.cpp
 
 HEADERS  += mainwindow.h \
     fimage.h \
     ft.h \
     dftgpu.h \
     dftcpu.h \
-    fftcpu.h
+    fftcpu.h \
+    gpu.h \
+    clinfo.h
 
 FORMS    += mainwindow.ui
 
@@ -43,7 +47,7 @@ CUDA_PATH = $$(CUDA_PATH)
 
 QMAKE_CXXFLAGS += -std=c++0x
 LIBS += -lOpenCL
-DEFINES += _USE_MATH_DEFINES CL_USE_DEPRECATED_OPENCL_2_0_APIS
+DEFINES += _USE_MATH_DEFINES CL_USE_DEPRECATED_OPENCL_2_0_APIS CL_USE_DEPRECATED_OPENCL_1_2_APIS
 
 CONFIG(debug, debug|release) {
     DESTDIR = build/debug

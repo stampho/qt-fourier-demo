@@ -2,10 +2,9 @@
 #define DFTGPU_H
 
 #include "ft.h"
+#include "gpu.h"
 
-#include <CL/cl.h>
-
-class DFTGpu : public FT {
+class DFTGpu : public FT, public GPU {
 public:
     explicit DFTGpu(FImage *image, QObject *parent = 0);
     ~DFTGpu();
@@ -13,15 +12,6 @@ public:
 private:
     Complex *calculateFourier(float *input, bool inverse = false) const;
 
-    bool initOpenCL();
-    bool createKernel(const QString &, const QString &);
-    void printCLInfo() const;
-
-    cl_device_id m_clDevice;
-    cl_context m_clContext;
-    cl_command_queue m_clQueue;
-    cl_program m_clProgram;
-    cl_kernel m_clKernel;
 };
 
 #endif // DFTGPU_H
