@@ -45,6 +45,36 @@ struct CLInfoHelper<char *> {
     }
 };
 
+template<typename InfoType>
+struct CLKernelInfoHelper {
+    template<typename InfoFunc, typename DataType>
+    static QString toString(InfoFunc func, DataType data, cl_device_id device, int info)
+    {
+        InfoType buffer;
+        func(data, device, info, sizeof(buffer), &buffer, 0);
+        return QString::number(buffer);
+    }
+};
+
+template<>
+struct CLKernelInfoHelper<size_t *> {
+    template<typename InfoFunc, typename DataType>
+    static QString toString(InfoFunc func, DataType data, cl_device_id device, int info)
+    {
+        size_t size;
+        func(data, device, info, 0, 0, &size);
+
+        size_t buffer[size];
+        func(data, device, info, size, &buffer, 0);
+
+        QStringList items;
+        for (size_t i = 0; i < size / sizeof(size_t); ++i)
+            items.append(QString::number(buffer[i]));
+
+        return items.join(" ");
+    }
+};
+
 QString CLInfo::keyToString(int key)
 {
     switch (key) {
@@ -63,6 +93,12 @@ QString CLInfo::keyToString(int key)
     case CL_DEVICE_GLOBAL_MEM_SIZE: return QStringLiteral("Global Memory");
     case CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE: return QStringLiteral("Constant Buffer");
     case CL_DEVICE_MAX_WORK_ITEM_SIZES: return QStringLiteral("Work Item Sizes");
+
+    case CL_KERNEL_WORK_GROUP_SIZE: return QStringLiteral("Max Work Group Size");
+    case CL_KERNEL_COMPILE_WORK_GROUP_SIZE: return QStringLiteral("Compile Work Group Size");
+    case CL_KERNEL_LOCAL_MEM_SIZE: return QStringLiteral("Local Mem Size");
+    case CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE: return QStringLiteral("Preferred Work Group Size Multiple");
+    case CL_KERNEL_PRIVATE_MEM_SIZE: return QStringLiteral("Private Mem Size");
     }
 
     return QString::number(key);
@@ -96,6 +132,19 @@ CLInfo::CLInfo(cl_device_id id)
     insert(CL_DEVICE_GLOBAL_MEM_SIZE, CLInfoHelper<cl_ulong>::toString(clGetDeviceInfo, id, CL_DEVICE_GLOBAL_MEM_SIZE));
     insert(CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE, CLInfoHelper<cl_ulong>::toString(clGetDeviceInfo, id, CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE));
     insert(CL_DEVICE_MAX_WORK_ITEM_SIZES, CLInfoHelper<size_t *>::toString(clGetDeviceInfo, id, CL_DEVICE_MAX_WORK_ITEM_SIZES));
+}
+
+CLInfo::CLInfo(cl_kernel kernel, cl_device_id device)
+    : QMap<int, QString>()
+{
+    if (!kernel || !device)
+        return;
+
+    insert(CL_KERNEL_WORK_GROUP_SIZE, CLKernelInfoHelper<size_t>::toString(clGetKernelWorkGroupInfo, kernel, device, CL_KERNEL_WORK_GROUP_SIZE));
+    insert(CL_KERNEL_COMPILE_WORK_GROUP_SIZE, CLKernelInfoHelper<size_t *>::toString(clGetKernelWorkGroupInfo, kernel, device, CL_KERNEL_COMPILE_WORK_GROUP_SIZE));
+    insert(CL_KERNEL_LOCAL_MEM_SIZE, CLKernelInfoHelper<cl_ulong>::toString(clGetKernelWorkGroupInfo, kernel, device, CL_KERNEL_LOCAL_MEM_SIZE));
+    insert(CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE, CLKernelInfoHelper<size_t>::toString(clGetKernelWorkGroupInfo, kernel, device, CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE));
+    //insert(CL_KERNEL_PRIVATE_MEM_SIZE, CLKernelInfoHelper<cl_ulong>::toString(clGetKernelWorkGroupInfo, kernel, device, CL_KERNEL_PRIVATE_MEM_SIZE));
 }
 
 CLInfo::~CLInfo()

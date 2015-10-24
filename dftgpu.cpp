@@ -1,5 +1,6 @@
 #include "dftgpu.h"
 
+#include "clinfo.h"
 #include "gpu.h"
 #include <QTime>
 
@@ -10,6 +11,9 @@ DFTGpu::DFTGpu(FImage *image, QObject *parent)
     m_gpu->createKernel(QStringLiteral("dft"), QStringLiteral(":/kernels/dft.cl"));
     if (m_gpu->hasError())
         return;
+
+    //qDebug() << CLInfo(m_gpu->getDevice());
+    //qDebug() << CLInfo(m_gpu->getKernel(), m_gpu->getDevice());
 
     QTime timer;
     timer.start();

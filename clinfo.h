@@ -11,6 +11,7 @@ public:
 
     CLInfo(cl_platform_id);
     CLInfo(cl_device_id);
+    CLInfo(cl_kernel, cl_device_id);
     virtual ~CLInfo();
 };
 

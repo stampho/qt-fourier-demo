@@ -82,6 +82,7 @@ public:
 
     bool hasError() const;
 
+    cl_device_id getDevice() const;
     cl_command_queue getCommandQueue() const;
     cl_kernel getKernel() const;
 

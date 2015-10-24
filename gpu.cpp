@@ -172,6 +172,11 @@ bool GPU::hasError() const
     return m_clError != CL_SUCCESS;
 }
 
+cl_device_id GPU::getDevice() const
+{
+    return m_clDevice;
+}
+
 cl_command_queue GPU::getCommandQueue() const
 {
     return m_clCommandQueue;
