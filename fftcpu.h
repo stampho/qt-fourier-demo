@@ -9,7 +9,7 @@ public:
     ~FFTCpu();
 
 private:
-    Complex *calculateFourier(float *input, bool inverse = false) const;
+    Complex *calculateFourier(float *input, bool inverse = false);
 
     void fft1D(Complex *, unsigned, bool) const;
     void revbinPermute(Complex *, unsigned) const;

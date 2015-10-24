@@ -92,7 +92,7 @@ float *FT::calculateMagnitude(Complex *input) const
     return magnitude;
 }
 
-FImage FT::reconstructFromMagnitude() const
+FImage FT::reconstructFromMagnitude()
 {
     if (!m_magnitude)
         return FImage(m_cols, m_rows);
@@ -142,7 +142,7 @@ float *FT::calculatePhase(Complex *input) const
     return phase;
 }
 
-FImage FT::reconstructFromPhase() const
+FImage FT::reconstructFromPhase()
 {
     if (!m_phase)
         return FImage(m_cols, m_rows);

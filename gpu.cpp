@@ -3,12 +3,6 @@
 #include <QFile>
 #include "clinfo.h"
 
-#define CHECK_CL_ERROR(message) \
-    if (m_clError != CL_SUCCESS) { \
-        qWarning("%s: %d", message, m_clError); \
-        return; \
-    }
-
 GPU::GPU(QObject *parent)
     : QObject(parent)
     , m_clError(CL_SUCCESS)
@@ -18,6 +12,7 @@ GPU::GPU(QObject *parent)
     , m_clCommandQueue(0)
     , m_clProgram(0)
     , m_clKernel(0)
+    , m_argCounter(0)
 {
     initPlatforms();
     initDevices();
@@ -145,14 +140,36 @@ void GPU::buildProgram()
     }
 }
 
+void GPU::release()
+{
+    for (int i = 0; i < m_inputArgs.size(); ++i) {
+        cl_mem clInput = m_inputArgs[i];
+        if (clInput)
+            clReleaseMemObject(clInput);
+    }
+
+    for (int i = 0; i < m_outputArgs.size(); ++i) {
+        cl_mem clOutput = m_outputArgs[i].first;
+        void *output = m_outputArgs[i].second;
+
+        size_t size = 0;
+        m_clError = clGetMemObjectInfo(clOutput, CL_MEM_SIZE, sizeof(size), &size, 0);
+        CHECK_CL_ERROR("[ERROR] Unable to acquire OpenCL Output Buffer size");
+
+        m_clError = clEnqueueReadBuffer(m_clCommandQueue, clOutput, CL_TRUE, 0, size, output, 0, 0, 0);
+        CHECK_CL_ERROR("[ERROR] Unable to read from OpenCL Output Buffer");
+
+        clReleaseMemObject(clOutput);
+    }
+
+    m_argCounter = 0;
+    m_inputArgs.clear();
+    m_outputArgs.clear();
+}
+
 bool GPU::hasError() const
 {
     return m_clError != CL_SUCCESS;
-}
-
-cl_context GPU::getContext() const
-{
-    return m_clContext;
 }
 
 cl_command_queue GPU::getCommandQueue() const
@@ -164,3 +181,4 @@ cl_kernel GPU::getKernel() const
 {
     return m_clKernel;
 }
+

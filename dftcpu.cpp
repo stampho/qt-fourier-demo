@@ -22,7 +22,7 @@ DFTCpu::~DFTCpu()
 }
 
 // TODO(pvarga): Complex array as an input is not supported yet
-Complex *DFTCpu::calculateFourier(float *input, bool inverse) const
+Complex *DFTCpu::calculateFourier(float *input, bool inverse)
 {
     const float dir = inverse ? 1.0 : -1.0;
     const float norm = inverse ? 1.0 / (m_rows * m_cols) : 1.0;

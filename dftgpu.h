@@ -10,7 +10,7 @@ public:
     ~DFTGpu();
 
 private:
-    Complex *calculateFourier(float *input, bool inverse = false) const;
+    Complex *calculateFourier(float *input, bool inverse = false);
 
 };
 

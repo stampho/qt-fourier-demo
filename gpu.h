@@ -7,6 +7,13 @@
 #include <QObject>
 #include <QVector>
 
+#define CHECK_CL_ERROR(message) \
+    if (m_clError != CL_SUCCESS) { \
+        qWarning("%s: %d", message, m_clError); \
+        return; \
+    }
+
+
 class GPU : public QObject {
     Q_OBJECT
 public:
@@ -14,10 +21,57 @@ public:
     virtual ~GPU();
 
     void createKernel(const QString &, const QString &);
+
+    template<typename T>
+    void setInputKernelArg(T *input, unsigned size = 1)
+    {
+        if (!m_clContext || !m_clKernel || !size)
+            return;
+
+        cl_mem clInput = 0;
+
+        if (size == 1) {
+            m_clError = clSetKernelArg(m_clKernel, m_argCounter++, sizeof(T), (void *) input);
+            CHECK_CL_ERROR("[ERROR] Unable to set OpenCL Kernel argument");
+        } else {
+            clInput = clCreateBuffer(m_clContext,
+                                     CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                                     sizeof(T) * size,
+                                     input,
+                                     &m_clError);
+            CHECK_CL_ERROR("[ERROR] Unable to create OpenCL Input Buffer");
+
+            m_clError = clSetKernelArg(m_clKernel, m_argCounter++, sizeof(cl_mem), (void *) &clInput);
+            CHECK_CL_ERROR("[ERROR] Unable to set OpenCL Kernel argument");
+        }
+
+        m_inputArgs.append(clInput);
+    }
+
+    template<typename T>
+    void setOutputKernelArg(T *output, unsigned size)
+    {
+        if (!m_clContext || !m_clKernel || !size)
+            return;
+
+        cl_mem clOutput = clCreateBuffer(m_clContext,
+                                         CL_MEM_WRITE_ONLY,
+                                         sizeof(T) * size,
+                                         0,
+                                         &m_clError);
+        CHECK_CL_ERROR("[ERROR] Unable to create OpenCL Output Buffer");
+
+        m_clError = clSetKernelArg(getKernel(), m_argCounter++, sizeof(cl_mem), (void *) &clOutput);
+        CHECK_CL_ERROR("[ERROR] Unable to set OpenCL Kernel argument");
+
+        m_outputArgs.append(QPair<cl_mem, void *>(clOutput, output));
+    }
+
+    void release();
+
     bool hasError() const;
 
 protected:
-    cl_context getContext() const;
     cl_command_queue getCommandQueue() const;
     cl_kernel getKernel() const;
 
@@ -41,6 +95,10 @@ private:
     cl_command_queue m_clCommandQueue;
     cl_program m_clProgram;
     cl_kernel m_clKernel;
+
+    unsigned m_argCounter;
+    QVector<cl_mem> m_inputArgs;
+    QVector<QPair<cl_mem, void * > > m_outputArgs;
 };
 
 #endif // GPU_H

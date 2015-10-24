@@ -26,12 +26,12 @@ public:
     virtual ~FT();
 
     FImage magnitudeImage() const;
-    FImage reconstructFromMagnitude() const;
+    FImage reconstructFromMagnitude();
     FImage phaseImage() const;
-    FImage reconstructFromPhase() const;
+    FImage reconstructFromPhase();
 
 protected:
-    virtual Complex *calculateFourier(float *input, bool inverse) const = 0;
+    virtual Complex *calculateFourier(float *input, bool inverse) = 0;
     float *calculateMagnitude(Complex *) const;
     float *calculatePhase(Complex *) const;
 

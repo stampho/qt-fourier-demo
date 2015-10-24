@@ -9,6 +9,7 @@ __kernel void dft(__constant float *input,
     int cols = get_global_size(0);
     int rows = get_global_size(1);
 
+    // TODO(pvarga): Pass dir and norm in parameter
     const float dir = inverse ? 1.0f : -1.0f;
     const float norm = inverse ? 1.0f / (rows * cols) : 1.0f;
 

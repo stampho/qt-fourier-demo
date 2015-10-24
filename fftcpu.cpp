@@ -22,7 +22,7 @@ FFTCpu::~FFTCpu()
 }
 
 // TODO(pvarga): Complex array as an input is not supported yet
-Complex *FFTCpu::calculateFourier(float *input, bool inverse) const
+Complex *FFTCpu::calculateFourier(float *input, bool inverse)
 {
     const int size = m_rows * m_cols;
     const float norm = inverse ? 1.0 / size : 1.0;
