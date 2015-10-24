@@ -21,8 +21,7 @@ DFTCpu::~DFTCpu()
 {
 }
 
-// TODO(pvarga): Complex array as an input is not supported yet
-Complex *DFTCpu::calculateFourier(float *input, bool inverse)
+Complex *DFTCpu::calculateFourier(Complex *input, bool inverse)
 {
     const float dir = inverse ? 1.0 : -1.0;
     const float norm = inverse ? 1.0 / (m_rows * m_cols) : 1.0;
@@ -36,13 +35,20 @@ Complex *DFTCpu::calculateFourier(float *input, bool inverse)
 
             for (int y = 0; y < m_rows; ++y) {
                 for (int x = 0; x < m_cols; ++x) {
-                    float f = input[x + y * m_cols];
                     float a = (float)u * (float)x / (float)m_cols;
                     float b = (float)v * (float)y / (float)m_rows;
                     float angle = dir * 2.0 * M_PI * (a + b);
 
-                    sumReal += f * cos(angle);
-                    sumImag += f * sin(angle);
+                    float cosval = cos(angle);
+                    float sinval = sin(angle);
+
+                    Complex c;
+                    Complex f = input[x + y * m_cols];
+                    c.real = (cosval * f.real) - (sinval * f.imag);
+                    c.imag = (cosval * f.imag) + (f.real * sinval);
+
+                    sumReal += c.real;
+                    sumImag += c.imag;
                 }
             }
 

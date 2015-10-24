@@ -21,8 +21,7 @@ FFTCpu::~FFTCpu()
 {
 }
 
-// TODO(pvarga): Complex array as an input is not supported yet
-Complex *FFTCpu::calculateFourier(float *input, bool inverse)
+Complex *FFTCpu::calculateFourier(Complex *input, bool inverse)
 {
     const int size = m_rows * m_cols;
     const float norm = inverse ? 1.0 / size : 1.0;
@@ -33,10 +32,7 @@ Complex *FFTCpu::calculateFourier(float *input, bool inverse)
         return fourier;
     }
 
-    for (int i = 0; i < size; ++i) {
-        fourier[i].real = input[i];
-        fourier[i].imag = 0.0;
-    }
+    memcpy(fourier, input, size * sizeof(Complex));
 
     for (int i = 0; i < size; i += m_cols)
         fft1D(&fourier[i], (unsigned)m_cols, inverse);

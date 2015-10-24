@@ -1,4 +1,4 @@
-__kernel void dft(__global float *input,
+__kernel void dft(__global float2 *input,
                   const uint2 sizes,
                   const float dir,
                   const float norm,
@@ -16,12 +16,17 @@ __kernel void dft(__global float *input,
         for (int x = 0; x < sizes.x; ++x) {
             float a = (float)u * (float)x / (float)sizes.x;
             float b = (float)v * (float)y / (float)sizes.y;
+
             float angle = dir * 2.0 * M_PI * (a + b);
             float sinval, cosval;
-
-            float2 f = (float2)(input[x + y * sizes.x]);
             sinval = sincos(angle, &cosval);
-            sum += (float2)(cosval, sinval) * f;
+
+            float2 c;
+            float2 f = input[x + y * sizes.x];
+            c.x = (cosval * f.x) - (sinval * f.y);
+            c.y = (cosval * f.y) + (f.x * sinval);
+
+            sum += c;
         }
     }
 

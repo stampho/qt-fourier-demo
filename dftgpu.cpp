@@ -32,15 +32,20 @@ DFTGpu::~DFTGpu()
 {
 }
 
-// TODO(pvarga): Complex array as an input is not supported yet
-Complex *DFTGpu::calculateFourier(float *input, bool inverse)
+Complex *DFTGpu::calculateFourier(Complex *input, bool inverse)
 {
     const unsigned size = m_cols * m_rows;
     const cl_uint2 sizes = { (cl_uint)m_cols, (cl_uint)m_rows };
     const float dir = inverse ? 1.0 : -1.0;
     const float norm = inverse ? 1.0 / size : 1.0;
 
-    m_gpu->setInputKernelArg<float>(input, size);
+    cl_float2 *fInput = new cl_float2[size];
+    for (unsigned i = 0; i < size; ++i) {
+        fInput[i].s[0] = input[i].real;
+        fInput[i].s[1] = input[i].imag;
+    }
+
+    m_gpu->setInputKernelArg<cl_float2>(fInput, size);
     m_gpu->setInputKernelArg<cl_uint2>(&sizes);
     m_gpu->setInputKernelArg<float>(&dir);
     m_gpu->setInputKernelArg<float>(&norm);
@@ -78,6 +83,7 @@ Complex *DFTGpu::calculateFourier(float *input, bool inverse)
     }
 
     m_gpu->release();
+    delete fInput;
 
     Complex *result = new Complex[size];
     for (unsigned i = 0; i < size; ++i)

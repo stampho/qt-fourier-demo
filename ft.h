@@ -31,7 +31,7 @@ public:
     FImage reconstructFromPhase();
 
 protected:
-    virtual Complex *calculateFourier(float *input, bool inverse) = 0;
+    virtual Complex *calculateFourier(Complex *input, bool inverse) = 0;
     float *calculateMagnitude(Complex *) const;
     float *calculatePhase(Complex *) const;
 
@@ -39,7 +39,7 @@ protected:
 
     int m_rows;
     int m_cols;
-    float *m_imageData;
+    Complex *m_imageData;
 
     Complex *m_fourier;
     float *m_magnitude;

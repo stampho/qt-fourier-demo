@@ -40,13 +40,13 @@ FT::FT(FImage *image, QObject *parent)
     , m_magnitude(0)
     , m_phase(0)
 {
-    int size = image->data().size();
+    unsigned size = image->data().size();
     Q_ASSERT(size == m_rows * m_cols);
 
-    m_imageData = new float[size];
+    m_imageData = new Complex[size];
     const uchar *values = image->data().constData();
-    for (int i = 0; i < size; ++i)
-        m_imageData[i] = (float)values[i];
+    for (unsigned i = 0; i < size; ++i)
+        m_imageData[i] = Complex((float)values[i], 0.0);
 }
 
 FT::~FT()
@@ -67,10 +67,10 @@ FImage FT::magnitudeImage() const
     if (!m_magnitude)
         return FImage(m_cols, m_rows);
 
-    int size = m_cols * m_rows;
+    unsigned size = m_cols * m_rows;
     uchar *data = new uchar[size];
 
-    for (int i = 0; i < size; ++i) {
+    for (unsigned i = 0; i < size; ++i) {
         float mag = m_magnitude[i];
         float value = 20 * log(mag + 1);
         if (value > 255.0)
@@ -83,10 +83,10 @@ FImage FT::magnitudeImage() const
 
 float *FT::calculateMagnitude(Complex *input) const
 {
-    int size = m_rows * m_cols;
+    unsigned size = m_rows * m_cols;
     float *magnitude = new float[size];
 
-    for (int i = 0; i < size; ++i)
+    for (unsigned i = 0; i < size; ++i)
         magnitude[i] = input[i].magnitude();
 
     return magnitude;
@@ -97,18 +97,26 @@ FImage FT::reconstructFromMagnitude()
     if (!m_magnitude)
         return FImage(m_cols, m_rows);
 
-    int size = m_cols * m_rows;
+    unsigned size = m_cols * m_rows;
     uchar *data = new uchar[size];
 
-    Complex *rec = calculateFourier(m_magnitude, true);
+    Complex *magnitude = new Complex[size];
+    for (unsigned i = 0; i < size; ++i)
+        magnitude[i] = Complex(m_magnitude[i], 0.0);
+
+    Complex *rec = calculateFourier(magnitude, true);
     float *recMagnitude = calculateMagnitude(rec);
 
-    for (int i = 0; i < size; ++i) {
+    for (unsigned i = 0; i < size; ++i) {
         float value = recMagnitude[i];
         if (value > 255.0)
             value = 255.0;
         data[i] = (uchar)value;
     }
+
+    delete magnitude;
+    delete rec;
+    delete recMagnitude;
 
     return FImage(data, m_cols, m_rows);
 }
@@ -133,10 +141,10 @@ FImage FT::phaseImage() const
 
 float *FT::calculatePhase(Complex *input) const
 {
-    int size = m_rows * m_cols;
+    unsigned size = m_rows * m_cols;
     float *phase = new float[size];
 
-    for (int i = 0; i < size; ++i)
+    for (unsigned i = 0; i < size; ++i)
         phase[i] = input[i].phase();
 
     return phase;
@@ -147,17 +155,25 @@ FImage FT::reconstructFromPhase()
     if (!m_phase)
         return FImage(m_cols, m_rows);
 
-    int size = m_cols * m_rows;
+    unsigned size = m_cols * m_rows;
     uchar *data = new uchar[size];
 
-    Complex *rec = calculateFourier(m_phase, true);
+    Complex *phase = new Complex[size];
+    for (unsigned i = 0; i < size; ++i)
+        phase[i] = Complex(m_phase[i], 0.0);
+
+    Complex *rec = calculateFourier(phase, true);
     float *recPhase = calculatePhase(rec);
 
-    for (int i = 0; i < size; ++i) {
+    for (unsigned i = 0; i < size; ++i) {
         float value = recPhase[i] + M_PI;
         value *= 255.0/(2 * M_PI);
         data[i] = (uchar)value;
     }
+
+    delete phase;
+    delete rec;
+    delete recPhase;
 
     return FImage(data, m_cols, m_rows);
 }
@@ -165,7 +181,7 @@ FImage FT::reconstructFromPhase()
 template <typename T>
 T *FT::fftshift(const T *input, bool inverse) const
 {
-    int size = m_rows * m_cols;
+    unsigned size = m_rows * m_cols;
     T *output = new T[size];
 
     int rowsMid = m_rows / 2;

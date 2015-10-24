@@ -11,7 +11,7 @@ public:
     ~DFTGpu();
 
 private:
-    Complex *calculateFourier(float *input, bool inverse = false);
+    Complex *calculateFourier(Complex *input, bool inverse = false);
 
     QScopedPointer<GPU> m_gpu;
 };
