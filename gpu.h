@@ -23,6 +23,17 @@ public:
     void createKernel(const QString &, const QString &);
 
     template<typename T>
+    void setInputKernelArg(const T *input)
+    {
+        if (!m_clContext || !m_clKernel)
+            return;
+
+        m_clError = clSetKernelArg(m_clKernel, m_argCounter++, sizeof(T), (void *) input);
+        CHECK_CL_ERROR("[ERROR] Unable to set OpenCL Kernel argument");
+        m_inputArgs.append(0);
+    }
+
+    template<typename T>
     void setInputKernelArg(T *input, unsigned size = 1)
     {
         if (!m_clContext || !m_clKernel || !size)

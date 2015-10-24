@@ -30,18 +30,15 @@ DFTGpu::~DFTGpu()
 Complex *DFTGpu::calculateFourier(float *input, bool inverse)
 {
     const unsigned size = m_rows * m_cols;
-
-    // TODO(pvarga): use cl_float2
-    Complex *fourier = new Complex[size];
-    float real[size];
-    float imag[size];
+    const float dir = inverse ? 1.0 : -1.0;
+    const float norm = inverse ? 1.0 / size : 1.0;
 
     setInputKernelArg<float>(input, size);
-    int inv = (int)inverse;
-    setInputKernelArg<int>(&inv);
+    setInputKernelArg<float>(&dir);
+    setInputKernelArg<float>(&norm);
 
-    setOutputKernelArg<float>(real, size);
-    setOutputKernelArg<float>(imag, size);
+    cl_float2 *output = new cl_float2[size];
+    setOutputKernelArg<cl_float2>(output, size);
 
     cl_uint dim = 2;
     size_t globalWorkGroupSize[] = { (size_t)m_cols, (size_t)m_rows, 0 };
@@ -52,14 +49,15 @@ Complex *DFTGpu::calculateFourier(float *input, bool inverse)
 
     if (clError != CL_SUCCESS) {
         qWarning("[ERROR] Unable to execute OpenCL Kernel: %d", clError);
-        return fourier;
+        return new Complex[size];
     }
 
     release();
 
+    Complex *result = new Complex[size];
     for (unsigned i = 0; i < size; ++i)
-        fourier[i] = Complex(real[i], imag[i]);
+        result[i] = Complex(output[i].s[0], output[i].s[1]);
 
-    return fourier;
+    return result;
 }
 
