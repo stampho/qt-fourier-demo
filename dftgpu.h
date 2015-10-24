@@ -2,9 +2,10 @@
 #define DFTGPU_H
 
 #include "ft.h"
-#include "gpu.h"
 
-class DFTGpu : public FT, public GPU {
+class GPU;
+
+class DFTGpu : public FT {
 public:
     explicit DFTGpu(FImage *image, QObject *parent = 0);
     ~DFTGpu();
@@ -12,6 +13,7 @@ public:
 private:
     Complex *calculateFourier(float *input, bool inverse = false);
 
+    QScopedPointer<GPU> m_gpu;
 };
 
 #endif // DFTGPU_H

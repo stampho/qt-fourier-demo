@@ -1,13 +1,14 @@
 #include "dftgpu.h"
 
+#include "gpu.h"
 #include <QTime>
 
 DFTGpu::DFTGpu(FImage *image, QObject *parent)
     : FT(image, parent)
-    , GPU(parent)
+    , m_gpu(new GPU(parent))
 {
-    createKernel(QStringLiteral("dft"), QStringLiteral(":/kernels/dft.cl"));
-    if (hasError())
+    m_gpu->createKernel(QStringLiteral("dft"), QStringLiteral(":/kernels/dft.cl"));
+    if (m_gpu->hasError())
         return;
 
     QTime timer;
@@ -33,26 +34,31 @@ Complex *DFTGpu::calculateFourier(float *input, bool inverse)
     const float dir = inverse ? 1.0 : -1.0;
     const float norm = inverse ? 1.0 / size : 1.0;
 
-    setInputKernelArg<float>(input, size);
-    setInputKernelArg<float>(&dir);
-    setInputKernelArg<float>(&norm);
+    m_gpu->setInputKernelArg<float>(input, size);
+    m_gpu->setInputKernelArg<float>(&dir);
+    m_gpu->setInputKernelArg<float>(&norm);
 
     cl_float2 *output = new cl_float2[size];
-    setOutputKernelArg<cl_float2>(output, size);
+    m_gpu->setOutputKernelArg<cl_float2>(output, size);
 
     cl_uint dim = 2;
     size_t globalWorkGroupSize[] = { (size_t)m_cols, (size_t)m_rows, 0 };
 
     cl_int clError = 0;
-    clError |= clEnqueueNDRangeKernel(getCommandQueue(), getKernel(), dim, 0, globalWorkGroupSize, 0, 0, 0, 0);
-    clError |= clFinish(getCommandQueue());
+    clError |= clEnqueueNDRangeKernel(m_gpu->getCommandQueue(),
+                                      m_gpu->getKernel(),
+                                      dim,
+                                      0,
+                                      globalWorkGroupSize,
+                                      0, 0, 0, 0);
+    clError |= clFinish(m_gpu->getCommandQueue());
 
     if (clError != CL_SUCCESS) {
         qWarning("[ERROR] Unable to execute OpenCL Kernel: %d", clError);
         return new Complex[size];
     }
 
-    release();
+    m_gpu->release();
 
     Complex *result = new Complex[size];
     for (unsigned i = 0; i < size; ++i)

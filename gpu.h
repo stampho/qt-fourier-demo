@@ -82,7 +82,6 @@ public:
 
     bool hasError() const;
 
-protected:
     cl_command_queue getCommandQueue() const;
     cl_kernel getKernel() const;
 
