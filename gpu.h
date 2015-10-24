@@ -20,6 +20,7 @@ public:
     explicit GPU(QObject *parent = 0);
     virtual ~GPU();
 
+    void preferredWorkGroupSize(size_t size[3], int, int, int) const;
     void createKernel(const QString &, const QString &);
 
     template<typename T>

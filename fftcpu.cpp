@@ -29,7 +29,7 @@ Complex *FFTCpu::calculateFourier(float *input, bool inverse)
     Complex *fourier = new Complex[size];
 
     if (!isPowerOfTwo(m_rows) || !isPowerOfTwo(m_cols)) {
-        qWarning("Image width or height is not power of 2! (%dx%d)", m_rows, m_cols);
+        qWarning("Image width or height is not power of 2! (%dx%d)", m_cols, m_rows);
         return fourier;
     }
 
