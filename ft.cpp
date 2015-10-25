@@ -178,6 +178,24 @@ FImage FT::reconstructFromPhase()
     return FImage(data, m_cols, m_rows);
 }
 
+FImage FT::reconstructOriginalImage()
+{
+    if (!m_fourier)
+        return FImage(m_cols, m_rows);
+
+    unsigned size = m_cols * m_rows;
+    uchar *data = new uchar[size];
+
+    Complex *rec = calculateFourier(m_fourier, true);
+
+    for (unsigned i = 0; i < size; ++i)
+        data[i] = (uchar)rec[i].real;
+
+    delete rec;
+
+    return FImage(data, m_cols, m_rows);
+}
+
 template <typename T>
 T *FT::fftshift(const T *input, bool inverse) const
 {

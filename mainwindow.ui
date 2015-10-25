@@ -83,7 +83,7 @@
            </widget>
           </item>
           <item row="3" column="0">
-           <widget class="QLabel" name="recImageRef">
+           <widget class="QLabel" name="recOriginalImageRef">
             <property name="text">
              <string>No Reconstructed Image</string>
             </property>
@@ -131,7 +131,7 @@
            </widget>
           </item>
           <item row="3" column="0">
-           <widget class="QLabel" name="recImageMod">
+           <widget class="QLabel" name="recOriginalImageMod">
             <property name="text">
              <string>No Reconstructed Image</string>
             </property>

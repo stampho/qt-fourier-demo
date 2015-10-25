@@ -29,6 +29,7 @@ public:
     FImage reconstructFromMagnitude();
     FImage phaseImage() const;
     FImage reconstructFromPhase();
+    FImage reconstructOriginalImage();
 
 protected:
     virtual Complex *calculateFourier(Complex *input, bool inverse) = 0;
