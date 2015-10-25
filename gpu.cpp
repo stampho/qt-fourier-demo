@@ -85,29 +85,13 @@ void GPU::initCommandQueue()
     CHECK_CL_ERROR("[ERROR] Unable to initialize OpenCL Command Queue");
 }
 
-// TODO(pvarga): Implement it!
 void GPU::preferredWorkGroupSize(size_t size[3], int cols, int rows, int depth) const
 {
     // TODO(pvarga): 3D work group is unsupported
     Q_UNUSED(depth);
 
     CLInfo kernelInfo(m_clKernel, m_clDevice);
-    const size_t maxSize = kernelInfo[CL_KERNEL_WORK_GROUP_SIZE].toInt();
-    const size_t preferredMutliple = kernelInfo[CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE].toInt();
-
-    CLInfo deviceInfo(m_clDevice);
-    QString maxWorkItemSizes = deviceInfo[CL_DEVICE_MAX_WORK_ITEM_SIZES];
-    const size_t maxCols = maxWorkItemSizes.split(" ")[0].toLong();
-    const size_t maxRows = maxWorkItemSizes.split(" ")[1].toLong();
-
-    // TODO(pvarga): Use this values for estimation
-    Q_UNUSED(maxSize);
-    Q_UNUSED(preferredMutliple);
-    Q_UNUSED(maxCols);
-    Q_UNUSED(maxRows);
-
-    // FIXME(pvarga): Hard-coded value for testing
-    size_t pref = 128;
+    size_t pref = kernelInfo[CL_KERNEL_WORK_GROUP_SIZE].toInt();
     size[0] = pref > (size_t)cols ? (size_t)cols : pref;
     size[1] = pref > (size_t)rows ? (size_t)rows : pref;
 }

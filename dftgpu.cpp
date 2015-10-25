@@ -35,7 +35,6 @@ DFTGpu::~DFTGpu()
 Complex *DFTGpu::calculateFourier(Complex *input, bool inverse)
 {
     const unsigned size = m_cols * m_rows;
-    const cl_uint2 sizes = { (cl_uint)m_cols, (cl_uint)m_rows };
     const float dir = inverse ? 1.0 : -1.0;
     const float norm = inverse ? 1.0 / size : 1.0;
 
@@ -45,8 +44,12 @@ Complex *DFTGpu::calculateFourier(Complex *input, bool inverse)
         fInput[i].s[1] = input[i].imag;
     }
 
+    const unsigned cols = m_cols;
+    const unsigned rows = m_rows;
+
     m_gpu->setInputKernelArg<cl_float2>(fInput, size);
-    m_gpu->setInputKernelArg<cl_uint2>(&sizes);
+    m_gpu->setInputKernelArg<unsigned>(&cols);
+    m_gpu->setInputKernelArg<unsigned>(&rows);
     m_gpu->setInputKernelArg<float>(&dir);
     m_gpu->setInputKernelArg<float>(&norm);
 
@@ -65,7 +68,7 @@ Complex *DFTGpu::calculateFourier(Complex *input, bool inverse)
 
     for (unsigned i = 0; i < iRuns; ++i) {
         for (unsigned j = 0; j < jRuns; ++j) {
-            //qDebug("[%u, %u] %lu, %lu", i, j, i * prefWidth, j * prefHeight);
+            //qDebug("[%u, %u] %u, %u", i, j, i * prefWidth, j * prefHeight);
             size_t offset[] = { i * prefWidth, j * prefHeight, 0 };
             clError |= clEnqueueNDRangeKernel(m_gpu->getCommandQueue(),
                                               m_gpu->getKernel(),

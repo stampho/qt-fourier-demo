@@ -35,27 +35,22 @@ public:
     }
 
     template<typename T>
-    void setInputKernelArg(T *input, unsigned size = 1)
+    void setInputKernelArg(T *input, unsigned size)
     {
         if (!m_clContext || !m_clKernel || !size)
             return;
 
         cl_mem clInput = 0;
 
-        if (size == 1) {
-            m_clError = clSetKernelArg(m_clKernel, m_argCounter++, sizeof(T), (void *) input);
-            CHECK_CL_ERROR("[ERROR] Unable to set OpenCL Kernel argument");
-        } else {
-            clInput = clCreateBuffer(m_clContext,
-                                     CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-                                     sizeof(T) * size,
-                                     input,
-                                     &m_clError);
-            CHECK_CL_ERROR("[ERROR] Unable to create OpenCL Input Buffer");
+        clInput = clCreateBuffer(m_clContext,
+                                 CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                                 sizeof(T) * size,
+                                 input,
+                                 &m_clError);
+        CHECK_CL_ERROR("[ERROR] Unable to create OpenCL Input Buffer");
 
-            m_clError = clSetKernelArg(m_clKernel, m_argCounter++, sizeof(cl_mem), (void *) &clInput);
-            CHECK_CL_ERROR("[ERROR] Unable to set OpenCL Kernel argument");
-        }
+        m_clError = clSetKernelArg(m_clKernel, m_argCounter++, sizeof(cl_mem), (void *) &clInput);
+        CHECK_CL_ERROR("[ERROR] Unable to set OpenCL Kernel argument");
 
         m_inputArgs.append(clInput);
     }
