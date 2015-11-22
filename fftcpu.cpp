@@ -119,8 +119,3 @@ inline int FFTCpu::revbin(unsigned x, unsigned ldn) const
 
     return r;
 }
-
-inline bool FFTCpu::isPowerOfTwo(unsigned x) const
-{
-    return ((x != 0) && !(x & (x - 1)));
-}

@@ -31,6 +31,11 @@ public:
     FImage reconstructFromPhase();
     FImage reconstructOriginalImage();
 
+    inline bool isPowerOfTwo(unsigned x) const
+    {
+        return ((x != 0) && !(x & (x - 1)));
+    }
+
 protected:
     virtual Complex *calculateFourier(Complex *input, bool inverse) = 0;
     float *calculateMagnitude(Complex *) const;

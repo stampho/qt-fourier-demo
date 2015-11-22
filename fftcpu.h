@@ -14,7 +14,6 @@ private:
     void fft1D(Complex *, unsigned, bool) const;
     void revbinPermute(Complex *, unsigned) const;
     inline int revbin(unsigned, unsigned) const;
-    inline bool isPowerOfTwo(unsigned) const;
 };
 
 #endif // FFTCPU_H

@@ -75,4 +75,46 @@ __kernel void fft1DCol(__global float2 *fourier,
                        const float norm)
 {
     unsigned col = get_global_id(0);
+
+    if (col >= WIDTH)
+        return;
+
+    float2 vector[HEIGHT];
+
+    vector[0] = fourier[col];
+    vector[HEIGHT - 1] = fourier[col + (HEIGHT - 1) * WIDTH];
+
+    for (unsigned i = 1; i < HEIGHT - 1; ++i) {
+#if HEIGHT > 2
+        unsigned r = revbin(i, LDHEIGHT);
+        if (r > i) {
+            vector[i] = fourier[col + (r * WIDTH)];
+            vector[r] = fourier[col + (i * WIDTH)];
+        } else if (r == i)
+#endif
+            vector[i] = fourier[col + (i * WIDTH)];
+    }
+
+    for (unsigned ldm = 1; ldm <= LDHEIGHT; ++ldm) {
+        unsigned m = (unsigned) pown((float) 2, ldm);
+        unsigned mh = m / 2;
+
+        float alpha = dir * 2.0 * M_PI / (float)m;
+
+        for (unsigned r = 0; r < HEIGHT; r += m) {
+            for (unsigned j = 0; j < mh; ++j) {
+                float sinval, cosval;
+                sinval = sincos(alpha * (float)j, &cosval);
+
+                float2 v = complexMul(vector[r + j + mh], (float2) (cosval, sinval));
+                float2 u = vector[r + j];
+
+                vector[r + j] = u + v;
+                vector[r + j + mh] = u - v;
+            }
+        }
+    }
+
+    for (unsigned i = 0; i < HEIGHT; ++i)
+        fourier[col + (i * WIDTH)] = vector[i] * (float2) (norm, norm);
 }

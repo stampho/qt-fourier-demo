@@ -67,6 +67,17 @@ Complex *FFTGpu::calculateFourier(Complex *input, bool inverse)
                                       globalWorkGroupSize,
                                       0, 0, 0, 0);
 
+    m_gpu->setCommonKernelArg<cl_float2>(fourierBuffer, size, clFourier, "fft1DCol");
+    m_gpu->setInputKernelArg<float>(&dir, "fft1DCol");
+    m_gpu->setInputKernelArg<float>(&norm, "fft1DCol");
+
+    globalWorkGroupSize[0] = (size_t)m_cols;
+    clError |= clEnqueueNDRangeKernel(m_gpu->getCommandQueue(),
+                                      m_gpu->getKernel("fft1DCol"),
+                                      dim,
+                                      0,
+                                      globalWorkGroupSize,
+                                      0, 0, 0, 0);
     clError |= clFinish(m_gpu->getCommandQueue());
 
     if (clError != CL_SUCCESS) {
@@ -74,96 +85,12 @@ Complex *FFTGpu::calculateFourier(Complex *input, bool inverse)
         return new Complex[size];
     }
 
-    m_gpu->release("fft1DRow");
+    m_gpu->release();
+
     Complex *fourier = new Complex[size];
     for (unsigned i = 0; i < size; ++i)
         fourier[i] = Complex(fourierBuffer[i].s[0], fourierBuffer[i].s[1]);
-
     delete fourierBuffer;
 
-    // TODO: Replace this with fft1DCol kernel!
-    Complex column[m_rows];
-    for (int x = 0; x < m_cols; ++x) {
-        for (int y = 0; y < m_rows; ++y) {
-            int index = x + y * m_cols;
-            column[y] = fourier[index];
-        }
-
-        fft1D(&column[0], (unsigned)m_rows, inverse);
-
-        for (int y = 0; y < m_rows; ++y) {
-            int index = x + y * m_cols;
-            fourier[index] = column[y];
-            fourier[index].real *= norm;
-            fourier[index].imag *= norm;
-        }
-    }
-
     return fourier;
-}
-
-void FFTGpu::fft1D(Complex *vector, unsigned n, bool inverse) const
-{
-    const float dir = inverse ? 1.0 : -1.0;
-
-    revbinPermute(vector, n);
-    unsigned ldn = log2(n);
-
-    for (unsigned ldm = 1; ldm <= ldn; ++ldm) {
-        unsigned m = pow(2, ldm);
-        unsigned mh = m / 2;
-
-        for (unsigned r = 0; r < n; r += m) {
-            for (unsigned j = 0; j < mh; ++j) {
-                float angle = dir * 2.0 * M_PI * (float)j / (float)m;
-
-                float ereal = cos(angle);
-                float eimag = sin(angle);
-
-                Complex v = vector[r + j + mh];
-                float vreal = v.real;
-                float vimag = v.imag;
-                v.real = vreal * ereal - vimag * eimag;
-                v.imag = vimag * ereal + vreal * eimag;
-
-                Complex u = vector[r + j];
-                vector[r + j].real = u.real + v.real;
-                vector[r + j].imag = u.imag + v.imag;
-                vector[r + j + mh].real = u.real - v.real;
-                vector[r + j + mh].imag = u.imag - v.imag;
-            }
-        }
-    }
-}
-
-void FFTGpu::revbinPermute(Complex *vector, unsigned n) const
-{
-    if (n <= 2)
-        return;
-
-    unsigned ldn = log2(n);
-    for (unsigned x = 0; x < n - 1; ++x) {
-        unsigned r = revbin(x, ldn);
-        if (r > x) {
-            Complex tmp = vector[x];
-            vector[x] = vector[r];
-            vector[r] = tmp;
-        }
-    }
-}
-
-inline int FFTGpu::revbin(unsigned x, unsigned ldn) const
-{
-    unsigned r = 0;
-    for (; ldn > 0; --ldn) {
-        r = r << 1;
-        r = r + (x & 1);
-        x = x >> 1;
-    }
-    return r;
-}
-
-inline bool FFTGpu::isPowerOfTwo(unsigned x) const
-{
-    return ((x != 0) && !(x & (x - 1)));
 }

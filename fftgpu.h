@@ -12,12 +12,6 @@ public:
 
 private:
     Complex *calculateFourier(Complex *input, bool inverse = false);
-    inline bool isPowerOfTwo(unsigned) const;
-
-    // TODO(pvarga): Remove these!
-    void fft1D(Complex *, unsigned, bool) const;
-    void revbinPermute(Complex *, unsigned) const;
-    inline int revbin(unsigned, unsigned) const;
 
     QScopedPointer<GPU> m_gpu;
 };
