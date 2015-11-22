@@ -10,9 +10,14 @@ class QString;
 
 class FImage : public QImage {
 public:
-    static FImage createFromFile(const QString &);
-    static FImage rectangle(const QSize &, const QSize &);
+    static bool isRectCode(const QString &);
 
+    static FImage createFromFile(const QString &);
+    static FImage rectangle(const QString &);
+    static FImage rectangle(const QSize &, const QSize &);
+    static FImage rectangle(const QSize &, const QSize &, unsigned, unsigned);
+
+    FImage();
     FImage(int, int);
     FImage(uchar *, int, int);
     QVector<uchar> data() const;

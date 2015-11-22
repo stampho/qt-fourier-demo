@@ -22,6 +22,17 @@ QDebug operator<<(QDebug, const Complex &);
 class FT : public QObject {
     Q_OBJECT
 public:
+    enum FTType {
+        DFTCPU = 0,
+        DFTGPU,
+        FFTCPU,
+        FFTGPU,
+        FTTYPECOUNT
+    };
+
+    static FT *createFT(FTType, FImage *);
+
+    explicit FT(QObject *parent = 0);
     explicit FT(FImage *image, QObject *parent = 0);
     virtual ~FT();
 

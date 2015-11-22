@@ -1,7 +1,13 @@
 #include "ft.h"
-#include "fimage.h"
 
 #include <math.h>
+
+#include "dftgpu.h"
+#include "dftcpu.h"
+#include "fftcpu.h"
+#include "fftgpu.h"
+#include "fimage.h"
+
 
 Complex::Complex()
     : real(0.0)
@@ -31,6 +37,27 @@ QDebug operator<<(QDebug debug, const Complex &c)
     return verbose;
 }
 
+
+FT *FT::createFT(FTType type, FImage *image)
+{
+    switch(type) {
+    case FTType::DFTCPU:
+        return new DFTCpu(image);
+    case FTType::DFTGPU:
+        return new DFTGpu(image);
+    case FTType::FFTCPU:
+        return new FFTCpu(image);
+    case FTType::FFTGPU:
+        return new FFTGpu(image);
+    default:
+        return 0;
+    }
+}
+
+FT::FT(QObject *parent)
+    : QObject(parent)
+{
+}
 
 FT::FT(FImage *image, QObject *parent)
     : QObject(parent)
@@ -167,7 +194,7 @@ FImage FT::reconstructFromPhase()
 
     for (unsigned i = 0; i < size; ++i) {
         float value = recPhase[i] + M_PI;
-        value *= 255.0/(2 * M_PI);
+        value *= 255.0/(2.0 * M_PI);
         data[i] = (uchar)value;
     }
 

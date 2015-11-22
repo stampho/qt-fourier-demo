@@ -3,6 +3,19 @@
 #include <QDebug>
 #include <QPainter>
 
+bool FImage::isRectCode(const QString &rectCode)
+{
+    QStringList values = rectCode.split("-");
+
+    if (values.length() != 7)
+        return false;
+
+    if (QString::compare(QStringLiteral("rect"), values[0]) != 0)
+        return false;
+
+    return true;
+}
+
 FImage FImage::createFromFile(const QString &fileName)
 {
     QImage image = QImage(fileName);
@@ -10,7 +23,28 @@ FImage FImage::createFromFile(const QString &fileName)
     return FImage(image);
 }
 
+FImage FImage::rectangle(const QString &rectCode)
+{
+    if (!FImage::isRectCode(rectCode))
+        return FImage();
+
+    QStringList values = rectCode.split("-");
+    int bgWidth = values[1].toInt();
+    int bgHeight = values[2].toInt();
+    int contentWidth = values[3].toInt();
+    int contentHeight = values[4].toInt();
+    int bgColor = values[5].toInt();
+    int fgColor = values[6].toInt();
+
+    return FImage::rectangle(QSize(bgWidth, bgHeight), QSize(contentWidth, contentHeight), bgColor, fgColor);
+}
+
 FImage FImage::rectangle(const QSize &imageSize, const QSize &rectangleSize)
+{
+    return FImage::rectangle(imageSize, rectangleSize, 0, 255);
+}
+
+FImage FImage::rectangle(const QSize &imageSize, const QSize &rectangleSize, unsigned bgColor, unsigned fgColor)
 {
     int topLeftX = imageSize.width() / 2 - rectangleSize.width() / 2;
     int topLeftY = imageSize.height() / 2 - rectangleSize.height() / 2;
@@ -19,15 +53,21 @@ FImage FImage::rectangle(const QSize &imageSize, const QSize &rectangleSize)
     QRect rect(topLeft, rectangleSize);
 
     QImage image(imageSize, QImage::Format_ARGB32_Premultiplied);
-    image.fill(Qt::black);
+    image.fill(QColor(bgColor, bgColor, bgColor));
 
     QPainterPath path;
     path.addRect(rect);
 
     QPainter paint(&image);
-    paint.fillPath(path, Qt::white);
+    QBrush brush = QBrush(QColor(fgColor, fgColor, fgColor));
+    paint.fillPath(path, brush);
 
     return FImage(image);
+}
+
+FImage::FImage()
+    : QImage()
+{
 }
 
 FImage::FImage(int width, int height)

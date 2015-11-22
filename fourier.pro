@@ -21,7 +21,8 @@ SOURCES += main.cpp\
     fftcpu.cpp \
     gpu.cpp \
     clinfo.cpp \
-    fftgpu.cpp
+    fftgpu.cpp \
+    rectdialog.cpp
 
 HEADERS  += mainwindow.h \
     fimage.h \
@@ -31,9 +32,11 @@ HEADERS  += mainwindow.h \
     fftcpu.h \
     gpu.h \
     clinfo.h \
-    fftgpu.h
+    fftgpu.h \
+    rectdialog.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    rectdialog.ui
 
 AMDAPPSDKROOT = $$(AMDAPPSDKROOT)
 !isEmpty(AMDAPPSDKROOT) {
