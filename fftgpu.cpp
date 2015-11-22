@@ -48,24 +48,14 @@ Complex *FFTGpu::calculateFourier(Complex *input, bool inverse)
         return new Complex[size];
     }
 
-    cl_float2 *fInput = new cl_float2[size];
+    cl_float2 *fourierBuffer = new cl_float2[size];
     for (unsigned i = 0; i < size; ++i) {
-        fInput[i].s[0] = input[i].real;
-        fInput[i].s[1] = input[i].imag;
+        fourierBuffer[i].s[0] = input[i].real;
+        fourierBuffer[i].s[1] = input[i].imag;
     }
 
-    cl_mem clFourier = clCreateBuffer(m_gpu->getContext(),
-                                      CL_MEM_COPY_HOST_PTR | CL_MEM_READ_WRITE,
-                                      sizeof(cl_float2) * size,
-                                      fInput,
-                                      &clError);
-    if (clError) {
-        qWarning("[ERROR] Unable to create OpenCL Buffer: %d", clError);
-        return new Complex[size];
-    }
-
-    clSetKernelArg(m_gpu->getKernel("fft1DRow"), 0, sizeof(cl_mem), (void *) &clFourier);
-    clSetKernelArg(m_gpu->getKernel("fft1DRow"), 1, sizeof(float), (void *) &dir);
+    cl_mem clFourier = m_gpu->setCommonKernelArg<cl_float2>(fourierBuffer, size, 0, "fft1DRow");
+    m_gpu->setInputKernelArg<float>(&dir, "fft1DRow");
 
     cl_uint dim = 1;
     size_t globalWorkGroupSize[] = { (size_t)m_rows, 0, 0 };
@@ -84,22 +74,14 @@ Complex *FFTGpu::calculateFourier(Complex *input, bool inverse)
         return new Complex[size];
     }
 
-    cl_float2 *output = new cl_float2[size];
-    clError = clEnqueueReadBuffer(m_gpu->getCommandQueue(), clFourier, CL_TRUE, 0, size * sizeof(cl_float2), output, 0, 0, 0);
-    if (clError) {
-        qWarning("[ERROR] Unable to read from OpenCL Buffer: %d", clError);
-        return new Complex[size];
-    }
-
+    m_gpu->release("fft1DRow");
     Complex *fourier = new Complex[size];
     for (unsigned i = 0; i < size; ++i)
-        fourier[i] = Complex(output[i].s[0], output[i].s[1]);
+        fourier[i] = Complex(fourierBuffer[i].s[0], fourierBuffer[i].s[1]);
 
-    clReleaseMemObject(clFourier);
-    delete output;
-    delete fInput;
+    delete fourierBuffer;
 
-
+    // TODO: Replace this with fft1DCol kernel!
     Complex column[m_rows];
     for (int x = 0; x < m_cols; ++x) {
         for (int y = 0; y < m_rows; ++y) {

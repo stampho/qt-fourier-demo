@@ -11,7 +11,6 @@ GPU::GPU(QObject *parent)
     , m_clContext(0)
     , m_clCommandQueue(0)
     , m_clProgram(0)
-    , m_argCounter(0)
 {
     initPlatforms();
     initDevices();
@@ -116,6 +115,9 @@ void GPU::createKernel(QStringList kernelIds, const QString &kernelPath)
         cl_kernel clKernel = clCreateKernel(m_clProgram, kernelId.toLocal8Bit().data(), &m_clError);
         CHECK_CL_ERROR("[ERROR] Unable to create OpenCL Kernel");
         m_clKernels.insert(kernelId, clKernel);
+        m_kernelArgCounter.insert(kernelId, 0);
+        m_kernelInputArgs.insert(kernelId, QVector<cl_mem>());
+        m_kernelOutputArgs.insert(kernelId, QVector<QPair<cl_mem, void *> >());
     }
 }
 
@@ -163,17 +165,26 @@ void GPU::buildProgram()
     }
 }
 
-void GPU::release()
+void GPU::releaseInputArgs(const QString &kernelId)
 {
-    for (int i = 0; i < m_inputArgs.size(); ++i) {
-        cl_mem clInput = m_inputArgs[i];
+    QVector<cl_mem> &inputArgs = m_kernelInputArgs[kernelId];
+
+    for (int i = 0; i < inputArgs.size(); ++i) {
+        cl_mem clInput = inputArgs[i];
         if (clInput)
             clReleaseMemObject(clInput);
     }
 
-    for (int i = 0; i < m_outputArgs.size(); ++i) {
-        cl_mem clOutput = m_outputArgs[i].first;
-        void *output = m_outputArgs[i].second;
+    inputArgs.clear();
+}
+
+void GPU::releaseOutputArgs(const QString &kernelId)
+{
+    QVector<QPair<cl_mem, void *> > &outputArgs = m_kernelOutputArgs[kernelId];
+
+    for (int i = 0; i < outputArgs.size(); ++i) {
+        cl_mem clOutput = outputArgs[i].first;
+        void *output = outputArgs[i].second;
 
         size_t size = 0;
         m_clError = clGetMemObjectInfo(clOutput, CL_MEM_SIZE, sizeof(size), &size, 0);
@@ -185,9 +196,23 @@ void GPU::release()
         clReleaseMemObject(clOutput);
     }
 
-    m_argCounter = 0;
-    m_inputArgs.clear();
-    m_outputArgs.clear();
+    outputArgs.clear();
+}
+
+void GPU::release(const QString &kernelId)
+{
+    if (!kernelId.isNull() && !kernelId.isEmpty()) {
+        releaseInputArgs(kernelId);
+        releaseOutputArgs(kernelId);
+        m_kernelArgCounter[kernelId] = 0;
+        return;
+    }
+
+    Q_FOREACH (QString id, m_clKernels.keys()) {
+        releaseInputArgs(id);
+        releaseOutputArgs(id);
+        m_kernelArgCounter[id] = 0;
+    }
 }
 
 bool GPU::hasError() const
@@ -210,11 +235,11 @@ cl_command_queue GPU::getCommandQueue() const
     return m_clCommandQueue;
 }
 
-cl_kernel GPU::getKernel(const QString &id) const
+cl_kernel GPU::getKernel(const QString &kernelId) const
 {
-    if (id.isNull() || id.isEmpty())
+    if (kernelId.isNull() || kernelId.isEmpty())
         return m_clKernels.first();
 
-    return m_clKernels[id];
+    return m_clKernels[kernelId];
 }
 
