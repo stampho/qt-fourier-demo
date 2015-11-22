@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>kernels/dft.cl</file>
+        <file>kernels/fft.cl</file>
     </qresource>
 </RCC>

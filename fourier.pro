@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     dftcpu.cpp \
     fftcpu.cpp \
     gpu.cpp \
-    clinfo.cpp
+    clinfo.cpp \
+    fftgpu.cpp
 
 HEADERS  += mainwindow.h \
     fimage.h \
@@ -29,7 +30,8 @@ HEADERS  += mainwindow.h \
     dftcpu.h \
     fftcpu.h \
     gpu.h \
-    clinfo.h
+    clinfo.h \
+    fftgpu.h
 
 FORMS    += mainwindow.ui
 
@@ -63,3 +65,9 @@ UI_DIR = $${DESTDIR}/.ui
 RESOURCES += \
     images.qrc \
     kernels.qrc
+
+DISTFILES += \
+    kernels/dft.cl \
+    kernels/fft.cl
+
+DEPENDPATH += kernels

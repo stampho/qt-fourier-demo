@@ -110,11 +110,13 @@ void FFTCpu::revbinPermute(Complex *vector, unsigned n) const
 inline int FFTCpu::revbin(unsigned x, unsigned ldn) const
 {
     unsigned r = 0;
-    for (; ldn > 0; --ldn) {
+
+    while (ldn-- > 0) {
         r = r << 1;
         r = r + (x & 1);
         x = x >> 1;
     }
+
     return r;
 }
 

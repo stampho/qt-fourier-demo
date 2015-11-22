@@ -5,6 +5,7 @@
 #include "dftgpu.h"
 #include "dftcpu.h"
 #include "fftcpu.h"
+#include "fftgpu.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -27,6 +28,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //DFTCpu fourierRef(&image);
     DFTGpu fourierRef(&image);
+    //FFTCpu fourierRef(&image);
+    //FFTGpu fourierRef(&image);
 
     FImage magnitudeImageRef = fourierRef.magnitudeImage();
     QPixmap magnitudePixmapRef = QPixmap::fromImage(magnitudeImageRef);
@@ -53,7 +56,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->recOriginalImageRef->setPixmap(recOriginalPixmapRef);
     ui->recOriginalImageRef->setFixedSize(recOriginalPixmapRef.size());
 
-    FFTCpu fourierMod(&image);
+    //FFTCpu fourierMod(&image);
+    FFTGpu fourierMod(&image);
 
     FImage magnitudeImageMod = fourierMod.magnitudeImage();
     QPixmap magnitudePixmapMod = QPixmap::fromImage(magnitudeImageMod);

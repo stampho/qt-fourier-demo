@@ -11,7 +11,6 @@ GPU::GPU(QObject *parent)
     , m_clContext(0)
     , m_clCommandQueue(0)
     , m_clProgram(0)
-    , m_clKernel(0)
     , m_argCounter(0)
 {
     initPlatforms();
@@ -23,7 +22,8 @@ GPU::GPU(QObject *parent)
 GPU::~GPU()
 {
     clReleaseProgram(m_clProgram);
-    clReleaseKernel(m_clKernel);
+    Q_FOREACH (cl_kernel clKernel, m_clKernels.values())
+        clReleaseKernel(clKernel);
     clReleaseCommandQueue(m_clCommandQueue);
     clReleaseContext(m_clContext);
 }
@@ -90,13 +90,18 @@ void GPU::preferredWorkGroupSize(size_t size[3], int cols, int rows, int depth) 
     // TODO(pvarga): 3D work group is unsupported
     Q_UNUSED(depth);
 
-    CLInfo kernelInfo(m_clKernel, m_clDevice);
+    CLInfo kernelInfo(m_clKernels.first(), m_clDevice);
     size_t pref = kernelInfo[CL_KERNEL_WORK_GROUP_SIZE].toInt();
     size[0] = pref > (size_t)cols ? (size_t)cols : pref;
     size[1] = pref > (size_t)rows ? (size_t)rows : pref;
 }
 
-void GPU::createKernel(const QString &kernelId, const QString &kernelPath)
+void GPU::addProgramMacro(const QString &macro)
+{
+    m_programMacros.append(macro);
+}
+
+void GPU::createKernel(QStringList kernelIds, const QString &kernelPath)
 {
     if (hasError())
         return;
@@ -107,8 +112,11 @@ void GPU::createKernel(const QString &kernelId, const QString &kernelPath)
     buildProgram();
     CHECK_CL_ERROR("[ERROR] Unable to build OpenCL Program");
 
-    m_clKernel = clCreateKernel(m_clProgram, kernelId.toLocal8Bit().data(), &m_clError);
-    CHECK_CL_ERROR("[ERROR] Unable to create OpenCL Kernel");
+    Q_FOREACH (QString kernelId, kernelIds) {
+        cl_kernel clKernel = clCreateKernel(m_clProgram, kernelId.toLocal8Bit().data(), &m_clError);
+        CHECK_CL_ERROR("[ERROR] Unable to create OpenCL Kernel");
+        m_clKernels.insert(kernelId, clKernel);
+    }
 }
 
 void GPU::createProgram(const QString &kernelPath)
@@ -140,7 +148,11 @@ void GPU::buildProgram()
     if (!m_clDevice || !m_clProgram)
         return;
 
-    m_clError = clBuildProgram(m_clProgram, 0, 0, 0, 0, 0);
+    QString options;
+    for (int i = 0; i < m_programMacros.size(); ++i)
+        options = QString("%1 -D%2").arg(options).arg(m_programMacros[i]);
+
+    m_clError = clBuildProgram(m_clProgram, 0, 0, options.toLocal8Bit().data(), 0, 0);
     if (m_clError != CL_SUCCESS) {
         size_t len;
         clGetProgramBuildInfo(m_clProgram, m_clDevice, CL_PROGRAM_BUILD_LOG, 0, 0, &len);
@@ -188,13 +200,21 @@ cl_device_id GPU::getDevice() const
     return m_clDevice;
 }
 
+cl_context GPU::getContext() const
+{
+    return m_clContext;
+}
+
 cl_command_queue GPU::getCommandQueue() const
 {
     return m_clCommandQueue;
 }
 
-cl_kernel GPU::getKernel() const
+cl_kernel GPU::getKernel(const QString &id) const
 {
-    return m_clKernel;
+    if (id.isNull() || id.isEmpty())
+        return m_clKernels.first();
+
+    return m_clKernels[id];
 }
 

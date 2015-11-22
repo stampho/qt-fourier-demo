@@ -21,15 +21,16 @@ public:
     virtual ~GPU();
 
     void preferredWorkGroupSize(size_t size[3], int, int, int) const;
-    void createKernel(const QString &, const QString &);
+    void addProgramMacro(const QString &);
+    void createKernel(QStringList, const QString &);
 
     template<typename T>
     void setInputKernelArg(const T *input)
     {
-        if (!m_clContext || !m_clKernel)
+        if (!m_clContext || !m_clKernels.first())
             return;
 
-        m_clError = clSetKernelArg(m_clKernel, m_argCounter++, sizeof(T), (void *) input);
+        m_clError = clSetKernelArg(m_clKernels.first(), m_argCounter++, sizeof(T), (void *) input);
         CHECK_CL_ERROR("[ERROR] Unable to set OpenCL Kernel argument");
         m_inputArgs.append(0);
     }
@@ -37,19 +38,18 @@ public:
     template<typename T>
     void setInputKernelArg(T *input, unsigned size)
     {
-        if (!m_clContext || !m_clKernel || !size)
+        if (!m_clContext || !m_clKernels.first() || !size)
             return;
 
-        cl_mem clInput = 0;
 
-        clInput = clCreateBuffer(m_clContext,
-                                 CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
-                                 sizeof(T) * size,
-                                 input,
-                                 &m_clError);
+        cl_mem clInput = clCreateBuffer(m_clContext,
+                                        CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR,
+                                        sizeof(T) * size,
+                                        input,
+                                        &m_clError);
         CHECK_CL_ERROR("[ERROR] Unable to create OpenCL Input Buffer");
 
-        m_clError = clSetKernelArg(m_clKernel, m_argCounter++, sizeof(cl_mem), (void *) &clInput);
+        m_clError = clSetKernelArg(m_clKernels.first(), m_argCounter++, sizeof(cl_mem), (void *) &clInput);
         CHECK_CL_ERROR("[ERROR] Unable to set OpenCL Kernel argument");
 
         m_inputArgs.append(clInput);
@@ -58,7 +58,7 @@ public:
     template<typename T>
     void setOutputKernelArg(T *output, unsigned size)
     {
-        if (!m_clContext || !m_clKernel || !size)
+        if (!m_clContext || !m_clKernels.first() || !size)
             return;
 
         cl_mem clOutput = clCreateBuffer(m_clContext,
@@ -79,8 +79,9 @@ public:
     bool hasError() const;
 
     cl_device_id getDevice() const;
+    cl_context getContext() const;
     cl_command_queue getCommandQueue() const;
-    cl_kernel getKernel() const;
+    cl_kernel getKernel(const QString &id = QString()) const;
 
 private:
     void initPlatforms(unsigned platformId = 0);
@@ -101,8 +102,10 @@ private:
     cl_context m_clContext;
     cl_command_queue m_clCommandQueue;
     cl_program m_clProgram;
-    cl_kernel m_clKernel;
 
+    QMap<QString, cl_kernel> m_clKernels;
+
+    QStringList m_programMacros;
     unsigned m_argCounter;
     QVector<cl_mem> m_inputArgs;
     QVector<QPair<cl_mem, void * > > m_outputArgs;

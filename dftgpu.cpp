@@ -9,7 +9,7 @@ DFTGpu::DFTGpu(FImage *image, QObject *parent)
     : FT(image, parent)
     , m_gpu(new GPU(parent))
 {
-    m_gpu->createKernel(QStringLiteral("dft"), QStringLiteral(":/kernels/dft.cl"));
+    m_gpu->createKernel(QStringList() << "dft", QStringLiteral(":/kernels/dft.cl"));
     if (m_gpu->hasError())
         return;
 
