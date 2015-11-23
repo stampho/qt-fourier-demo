@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Generate Rectangle</string>
   </property>
   <property name="sizeGripEnabled">
    <bool>true</bool>
@@ -512,7 +512,7 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>225</width>
+           <width>228</width>
            <height>350</height>
           </rect>
          </property>
