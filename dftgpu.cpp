@@ -3,7 +3,6 @@
 #include "clinfo.h"
 #include "gpu.h"
 #include <QtMath>
-#include <QTime>
 
 DFTGpu::DFTGpu(FImage *image, QObject *parent)
     : FT(image, parent)
@@ -15,17 +14,6 @@ DFTGpu::DFTGpu(FImage *image, QObject *parent)
 
     //qDebug() << CLInfo(m_gpu->getDevice());
     //qDebug() << CLInfo(m_gpu->getKernel(), m_gpu->getDevice());
-
-    QTime timer;
-    timer.start();
-    qDebug() << "[GPU] Working on Discrete Fourier Transformation...";
-
-    m_fourier = calculateFourier(m_imageData);
-    m_magnitude = calculateMagnitude(m_fourier);
-    m_phase = calculatePhase(m_fourier);
-
-    qDebug() << "BOOM! Done.";
-    qDebug() << "It took" << timer.elapsed() << "msecs";
 }
 
 DFTGpu::~DFTGpu()

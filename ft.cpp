@@ -1,6 +1,7 @@
 #include "ft.h"
 
 #include <math.h>
+#include <QTime>
 
 #include "dftgpu.h"
 #include "dftcpu.h"
@@ -87,6 +88,31 @@ FT::~FT()
         delete m_magnitude;
     if (m_phase)
         delete m_phase;
+}
+
+int FT::init()
+{
+    QTime timer;
+    timer.start();
+
+    m_fourier = calculateFourier(m_imageData, false);
+
+    int elapsed = timer.elapsed();
+
+    m_magnitude = calculateMagnitude(m_fourier);
+    m_phase = calculatePhase(m_fourier);
+
+    return elapsed;
+}
+
+int FT::bench()
+{
+    QTime timer;
+    timer.start();
+
+    calculateFourier(m_imageData, false);
+
+    return timer.elapsed();
 }
 
 FImage FT::magnitudeImage() const

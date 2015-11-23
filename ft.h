@@ -36,6 +36,9 @@ public:
     explicit FT(FImage *image, QObject *parent = 0);
     virtual ~FT();
 
+    int init();
+    int bench();
+
     FImage magnitudeImage() const;
     FImage reconstructFromMagnitude();
     FImage phaseImage() const;

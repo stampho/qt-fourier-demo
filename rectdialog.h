@@ -12,13 +12,13 @@ class RectDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit RectDialog(QWidget *parent = 0);
+    explicit RectDialog(const QString &rectCode, QWidget *parent = 0);
     ~RectDialog();
 
     QString getRectCode() const;
 
 private slots:
-    void rectCodeUpdated();
+    void updateRectCode();
     void applyRectCode();
     void updatePreview();
 

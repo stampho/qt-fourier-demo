@@ -1,25 +1,26 @@
 #include "rectdialog.h"
 #include "ui_rectdialog.h"
 
-#include <QDebug>
-
 #include "fimage.h"
 
-RectDialog::RectDialog(QWidget *parent)
+RectDialog::RectDialog(const QString &rectCode, QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::RectDialog)
     , m_ignoreSignals(false)
 {
     ui->setupUi(this);
-    rectCodeUpdated();
-    updatePreview();
+    if (FImage::isRectCode(rectCode)) {
+        ui->rectCodeLine->setText(rectCode);
+        applyRectCode();
+    } else
+        updateRectCode();
 
-    connect(ui->bgWidthSpin, SIGNAL(valueChanged(int)), this, SLOT(rectCodeUpdated()));
-    connect(ui->bgHeightSpin, SIGNAL(valueChanged(int)), this, SLOT(rectCodeUpdated()));
-    connect(ui->contentWidthSpin, SIGNAL(valueChanged(int)), this, SLOT(rectCodeUpdated()));
-    connect(ui->contentHeightSpin, SIGNAL(valueChanged(int)), this, SLOT(rectCodeUpdated()));
-    connect(ui->bgColorSlider, SIGNAL(valueChanged(int)), this, SLOT(rectCodeUpdated()));
-    connect(ui->contentColorSlider, SIGNAL(valueChanged(int)), this, SLOT(rectCodeUpdated()));
+    connect(ui->bgWidthSpin, SIGNAL(valueChanged(int)), this, SLOT(updateRectCode()));
+    connect(ui->bgHeightSpin, SIGNAL(valueChanged(int)), this, SLOT(updateRectCode()));
+    connect(ui->contentWidthSpin, SIGNAL(valueChanged(int)), this, SLOT(updateRectCode()));
+    connect(ui->contentHeightSpin, SIGNAL(valueChanged(int)), this, SLOT(updateRectCode()));
+    connect(ui->bgColorSlider, SIGNAL(valueChanged(int)), this, SLOT(updateRectCode()));
+    connect(ui->contentColorSlider, SIGNAL(valueChanged(int)), this, SLOT(updateRectCode()));
 
     connect(ui->applyButton, SIGNAL(pressed()), this, SLOT(applyRectCode()));
 }
@@ -34,7 +35,7 @@ QString RectDialog::getRectCode() const
     return m_rectCode;
 }
 
-void RectDialog::rectCodeUpdated()
+void RectDialog::updateRectCode()
 {
     if (m_ignoreSignals)
         return;

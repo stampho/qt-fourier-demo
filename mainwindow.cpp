@@ -46,7 +46,9 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     ui->refFtCombo->setCurrentIndex(FT::FFTCPU);
+    ui->refElapsedLabel->setStyleSheet("QLabel { color: red; }");
     ui->modFtCombo->setCurrentIndex(FT::FFTGPU);
+    ui->modElapsedLabel->setStyleSheet("QLabel { color: red; }");
 
     ui->imageLine->setText(QStringLiteral(":/images/qt-logo-128.png"));
     connect(ui->browseButton, SIGNAL(pressed()), this, SLOT(showImageBrowser()));
@@ -71,13 +73,14 @@ void MainWindow::showImageBrowser()
 
 void MainWindow::showRectDialog()
 {
-    RectDialog dialog(this);
+    RectDialog dialog(ui->imageLine->text(), this);
     if (dialog.exec())
         ui->imageLine->setText(dialog.getRectCode());
 }
 
 void MainWindow::startCompare()
 {
+    int elapsed;
     m_progress->setValue(0);
 
     QString input = ui->imageLine->text();
@@ -96,6 +99,8 @@ void MainWindow::startCompare()
 
     m_progress->setValue(10);
     FT *fourierRef = FT::createFT((FT::FTType)ui->refFtCombo->currentIndex(), &image);
+    elapsed = fourierRef->init();
+    ui->refElapsedLabel->setText(QString("%1 ms").arg(QString::number(elapsed)));
     m_progress->setValue(20);
 
     FImage magnitudeImageRef = fourierRef->magnitudeImage();
@@ -132,6 +137,8 @@ void MainWindow::startCompare()
 
 
     FT *fourierMod = FT::createFT((FT::FTType)ui->modFtCombo->currentIndex(), &image);
+    elapsed = fourierMod->init();
+    ui->modElapsedLabel->setText(QString("%1 ms").arg(QString::number(elapsed)));
     m_progress->setValue(80);
 
     FImage magnitudeImageMod = fourierMod->magnitudeImage();

@@ -1,20 +1,8 @@
 #include "fftcpu.h"
 
-#include <QTime>
-
 FFTCpu::FFTCpu(FImage *image, QObject *parent)
     : FT(image, parent)
 {
-    QTime timer;
-    timer.start();
-    qDebug() << "[CPU] Working on Fast Fourier Transformation...";
-
-    m_fourier = calculateFourier(m_imageData);
-    m_magnitude = calculateMagnitude(m_fourier);
-    m_phase = calculatePhase(m_fourier);
-
-    qDebug() << "BOOM! Done.";
-    qDebug() << "It took" << timer.elapsed() << "msecs";
 }
 
 FFTCpu::~FFTCpu()
