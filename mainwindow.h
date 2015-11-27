@@ -19,12 +19,20 @@ public:
 
 private slots:
     void showImageBrowser();
-    void showRectDialog();
+    void showRectDialogForBench();
+    void showRectDialogForCompare();
+
+    void roundSBToPowerOfTwo(int);
+
     void startCompare();
+    void startBench();
 
 private:
     Ui::MainWindow *ui;
     QProgressDialog *m_progress;
+
+    int rangeMinSBPrevValue;
+    int rangeMaxSBPrevValue;
 };
 
 #endif // MAINWINDOW_H
