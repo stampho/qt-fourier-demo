@@ -18,7 +18,7 @@ __kernel void dft(__global float2 *input,
             float a = (float)u * (float)x / (float)width;
             float b = (float)v * (float)y / (float)height;
 
-            float angle = dir * 2.0 * M_PI * (a + b);
+            float angle = dir * 2.0 * (float)M_PI * (a + b);
             float sinval, cosval;
             sinval = sincos(angle, &cosval);
 

@@ -2,7 +2,6 @@
 
 #include "clinfo.h"
 #include "gpu.h"
-#include <QtMath>
 
 FFTGpu::FFTGpu(FImage *image, QObject *parent)
     : FT(image, parent)
@@ -31,7 +30,7 @@ Complex *FFTGpu::calculateFourier(Complex *input, bool inverse)
     const float norm = inverse ? 1.0 / size : 1.0;
     cl_int clError = 0;
 
-    if (!isPowerOfTwo(m_rows) || !isPowerOfTwo(m_cols)) {
+    if (!IS_POWER_OF_TWO(m_rows) || !IS_POWER_OF_TWO(m_cols)) {
         qWarning("Image width or height is not power of 2! (%dx%d)", m_cols, m_rows);
         return new Complex[size];
     }

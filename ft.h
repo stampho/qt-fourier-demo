@@ -3,6 +3,9 @@
 
 #include <QDebug>
 #include <QObject>
+#include <QtMath>
+
+#define IS_POWER_OF_TWO(x) ((x != 0) && !(x & (x - 1)))
 
 class FImage;
 
@@ -44,11 +47,6 @@ public:
     FImage phaseImage() const;
     FImage reconstructFromPhase();
     FImage reconstructOriginalImage();
-
-    inline bool isPowerOfTwo(unsigned x) const
-    {
-        return ((x != 0) && !(x & (x - 1)));
-    }
 
 protected:
     virtual Complex *calculateFourier(Complex *input, bool inverse) = 0;

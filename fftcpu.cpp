@@ -15,7 +15,7 @@ Complex *FFTCpu::calculateFourier(Complex *input, bool inverse)
     const float norm = inverse ? 1.0 / size : 1.0;
     Complex *fourier = new Complex[size];
 
-    if (!isPowerOfTwo(m_rows) || !isPowerOfTwo(m_cols)) {
+    if (!IS_POWER_OF_TWO(m_rows) || !IS_POWER_OF_TWO(m_cols)) {
         qWarning("Image width or height is not power of 2! (%dx%d)", m_cols, m_rows);
         return fourier;
     }
@@ -53,15 +53,15 @@ void FFTCpu::fft1D(Complex *vector, unsigned n, bool inverse) const
     unsigned ldn = log2(n);
 
     for (unsigned ldm = 1; ldm <= ldn; ++ldm) {
-        unsigned m = pow(2, ldm);
+        unsigned m = qPow(2, ldm);
         unsigned mh = m / 2;
 
         for (unsigned r = 0; r < n; r += m) {
             for (unsigned j = 0; j < mh; ++j) {
-                float angle = dir * 2.0 * M_PI * (float)j / (float)m;
+                float angle = dir * 2.0 * (float)M_PI * (float)j / (float)m;
 
-                float ereal = cos(angle);
-                float eimag = sin(angle);
+                float ereal = qCos(angle);
+                float eimag = qSin(angle);
 
                 Complex v = vector[r + j + mh];
                 float vreal = v.real;

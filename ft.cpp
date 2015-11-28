@@ -1,6 +1,5 @@
 #include "ft.h"
 
-#include <math.h>
 #include <QTime>
 
 #include "dftgpu.h"
@@ -24,11 +23,11 @@ Complex::Complex(float real, float imag)
 
 inline float Complex::magnitude() const
 {
-    return sqrt((real * real) + (imag * imag));
+    return qSqrt((real * real) + (imag * imag));
 }
 inline float Complex::phase() const
 {
-    return atan2(imag, real);
+    return qAtan2(imag, real);
 }
 
 QDebug operator<<(QDebug debug, const Complex &c)
@@ -184,8 +183,8 @@ FImage FT::phaseImage() const
     uchar *data = new uchar[size];
 
     for (int i = 0; i < size; ++i) {
-        float value = m_phase[i] + M_PI;
-        value *= 255.0/(2.0 * M_PI);
+        float value = m_phase[i] + (float)M_PI;
+        value *= 255.0/(2.0 * (float)M_PI);
         data[i] = (uchar)value;
     }
 
@@ -219,8 +218,8 @@ FImage FT::reconstructFromPhase()
     float *recPhase = calculatePhase(rec);
 
     for (unsigned i = 0; i < size; ++i) {
-        float value = recPhase[i] + M_PI;
-        value *= 255.0/(2.0 * M_PI);
+        float value = recPhase[i] + (float)M_PI;
+        value *= 255.0/(2.0 * (float)M_PI);
         data[i] = (uchar)value;
     }
 

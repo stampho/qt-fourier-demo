@@ -1,16 +1,12 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include <math.h>
 #include <QFileDialog>
 #include <QProgressDialog>
 
 #include "fimage.h"
 #include "ft.h"
 #include "rectdialog.h"
-
-#define NEXT_POWER_OF_TWO(x) (1 << (int)ceil(log2(x)))
-#define PREV_POWER_OF_TWO(x) (1 << ((int)ceil(log2(x)) - 1))
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -113,9 +109,9 @@ void MainWindow::roundSBToPowerOfTwo(int value)
     int nextValue = value;
 
     if (prevValue < value)
-        nextValue = NEXT_POWER_OF_TWO(value);
+        nextValue = qNextPowerOfTwo(value);
     else if(prevValue > value)
-        nextValue = PREV_POWER_OF_TWO(value);
+        nextValue = qNextPowerOfTwo(value) >> 1;
 
     if (sb == ui->rangeMinSB)
         rangeMinSBPrevValue = nextValue;
@@ -225,7 +221,20 @@ void MainWindow::startCompare()
 
 void MainWindow::startBench()
 {
+    int rangeMin = ui->rangeMinSB->value();
+    int rangeMax = ui->rangeMaxSB->value();
+    int iterations = ui->benchIterRB->value();
+
+    Q_ASSERT(IS_POWER_OF_TWO(rangeMin));
+    Q_ASSERT(IS_POWER_OF_TWO(rangeMax));
+
     m_progress->setValue(0);
-    qDebug("!!! BENCH !!!");
+
+    for (int size = rangeMin; size <= rangeMax; size = qNextPowerOfTwo(size)) {
+        for (int i = 0; i < iterations; ++i) {
+            qDebug() << size;
+        }
+    }
+
     m_progress->setValue(100);
 }

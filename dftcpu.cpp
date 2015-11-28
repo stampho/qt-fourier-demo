@@ -25,10 +25,10 @@ Complex *DFTCpu::calculateFourier(Complex *input, bool inverse)
                 for (int x = 0; x < m_cols; ++x) {
                     float a = (float)u * (float)x / (float)m_cols;
                     float b = (float)v * (float)y / (float)m_rows;
-                    float angle = dir * 2.0 * M_PI * (a + b);
+                    float angle = dir * 2.0 * (float)M_PI * (a + b);
 
-                    float cosval = cos(angle);
-                    float sinval = sin(angle);
+                    float cosval = qCos(angle);
+                    float sinval = qSin(angle);
 
                     Complex c;
                     Complex f = input[x + y * m_cols];

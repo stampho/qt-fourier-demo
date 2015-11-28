@@ -47,10 +47,10 @@ __kernel void fft1DRow(__global float2 *fourier,
     }
 
     for (unsigned ldm = 1; ldm <= LDWIDTH; ++ldm) {
-        unsigned m = (unsigned) pown((float) 2, ldm);
-        unsigned mh = m / 2;
+        unsigned m = 1 << ldm;
+        unsigned mh = m >> 1;
 
-        float alpha = dir * 2.0 * M_PI / (float)m;
+        float alpha = dir * 2.0 * (float)M_PI / (float)m;
 
         for (unsigned r = 0; r < WIDTH; r += m) {
             for (unsigned j = 0; j < mh; ++j) {
@@ -96,10 +96,10 @@ __kernel void fft1DCol(__global float2 *fourier,
     }
 
     for (unsigned ldm = 1; ldm <= LDHEIGHT; ++ldm) {
-        unsigned m = (unsigned) pown((float) 2, ldm);
-        unsigned mh = m / 2;
+        unsigned m = 1 << ldm;
+        unsigned mh = m >> 1;
 
-        float alpha = dir * 2.0 * M_PI / (float)m;
+        float alpha = dir * 2.0 * (float)M_PI / (float)m;
 
         for (unsigned r = 0; r < HEIGHT; r += m) {
             for (unsigned j = 0; j < mh; ++j) {

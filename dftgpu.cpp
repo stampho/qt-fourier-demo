@@ -2,7 +2,6 @@
 
 #include "clinfo.h"
 #include "gpu.h"
-#include <QtMath>
 
 DFTGpu::DFTGpu(FImage *image, QObject *parent)
     : FT(image, parent)
