@@ -130,7 +130,7 @@ public:
                                       sizeof(T) * size,
                                       buffer,
                                       &m_clError);
-            CHECK_CL_ERROR_RET("[ERROR] Unable to create OpenCL Output Buffer");
+            CHECK_CL_ERROR_RET("[ERROR] Unable to create OpenCL Common Buffer");
         }
 
         m_clError = clSetKernelArg(clKernel,

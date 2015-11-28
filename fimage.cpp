@@ -20,7 +20,7 @@ FImage FImage::createFromFile(const QString &fileName)
 {
     QImage image = QImage(fileName);
     image = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-    return FImage(image);
+    return FImage(image, fileName);
 }
 
 FImage FImage::rectangle(const QString &rectCode)
@@ -39,20 +39,34 @@ FImage FImage::rectangle(const QString &rectCode)
     return FImage::rectangle(QSize(bgWidth, bgHeight), QSize(contentWidth, contentHeight), bgColor, fgColor);
 }
 
-FImage FImage::rectangle(const QSize &imageSize, const QSize &rectangleSize)
+FImage FImage::rectangle(const QString &rectCode, const QSize &bgSize)
 {
-    return FImage::rectangle(imageSize, rectangleSize, 0, 255);
+    if (!FImage::isRectCode(rectCode))
+        return FImage();
+
+    QStringList values = rectCode.split("-");
+    int contentWidth = values[3].toInt();
+    int contentHeight = values[4].toInt();
+    int bgColor = values[5].toInt();
+    int fgColor = values[6].toInt();
+
+    return FImage::rectangle(bgSize, QSize(contentWidth, contentHeight), bgColor, fgColor);
 }
 
-FImage FImage::rectangle(const QSize &imageSize, const QSize &rectangleSize, unsigned bgColor, unsigned fgColor)
+FImage FImage::rectangle(const QSize &bgSize, const QSize &contentSize)
 {
-    int topLeftX = imageSize.width() / 2 - rectangleSize.width() / 2;
-    int topLeftY = imageSize.height() / 2 - rectangleSize.height() / 2;
+    return FImage::rectangle(bgSize, contentSize, 0, 255);
+}
+
+FImage FImage::rectangle(const QSize &bgSize, const QSize &contentSize, unsigned bgColor, unsigned fgColor)
+{
+    int topLeftX = bgSize.width() / 2 - contentSize.width() / 2;
+    int topLeftY = bgSize.height() / 2 - contentSize.height() / 2;
     QPoint topLeft(topLeftX, topLeftY);
 
-    QRect rect(topLeft, rectangleSize);
+    QRect rect(topLeft, contentSize);
 
-    QImage image(imageSize, QImage::Format_ARGB32_Premultiplied);
+    QImage image(bgSize, QImage::Format_ARGB32_Premultiplied);
     image.fill(QColor(bgColor, bgColor, bgColor));
 
     QPainterPath path;
@@ -62,22 +76,35 @@ FImage FImage::rectangle(const QSize &imageSize, const QSize &rectangleSize, uns
     QBrush brush = QBrush(QColor(fgColor, fgColor, fgColor));
     paint.fillPath(path, brush);
 
-    return FImage(image);
+    QStringList code;
+
+    code.append("rect");
+    code.append(QString::number(bgSize.width()));
+    code.append(QString::number(bgSize.height()));
+    code.append(QString::number(contentSize.width()));
+    code.append(QString::number(contentSize.height()));
+    code.append(QString::number(bgColor));
+    code.append(QString::number(fgColor));
+
+    return FImage(image, code.join("-"));
 }
 
 FImage::FImage()
     : QImage()
+    , m_id(QStringLiteral("rect-0-0-0-0-0-0"))
 {
 }
 
 FImage::FImage(int width, int height)
     : QImage(width, height, QImage::Format_ARGB32_Premultiplied)
+    , m_id(QStringLiteral("rect-%1-%2-0-0-0-0").arg(width).arg(height))
 {
     fill(Qt::black);
 }
 
-FImage::FImage(const QImage &image)
+FImage::FImage(const QImage &image, const QString &id)
     : QImage(image)
+    , m_id(id)
 {
     if (!isGrayscale())
         convertToGrayscale();
@@ -85,8 +112,9 @@ FImage::FImage(const QImage &image)
     fillData();
 }
 
-FImage::FImage(uchar *data, int width, int height)
+FImage::FImage(uchar *data, int width, int height, const QString &id)
     : QImage(width, height, QImage::Format_ARGB32_Premultiplied)
+    , m_id(id)
 {
     int size = width * height;
     m_data = QVector<uchar>(size);
@@ -101,6 +129,10 @@ QVector<uchar> FImage::data() const
     return m_data;
 }
 
+QString FImage::id() const
+{
+    return m_id;
+}
 
 void FImage::convertToGrayscale()
 {

@@ -1,7 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <algorithm>
 #include <QFileDialog>
+#include <QFontDatabase>
 #include <QProgressDialog>
 
 #include "fimage.h"
@@ -50,10 +52,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->refElapsedLabel->setStyleSheet("QLabel { color: red; }");
     ui->modFtCombo->setCurrentIndex(FT::FFTGPU);
     ui->modElapsedLabel->setStyleSheet("QLabel { color: red; }");
-    ui->benchFtCombo->setCurrentIndex(FT::DFTCPU);
+    ui->benchFtCombo->setCurrentIndex(FT::FFTGPU);
 
     ui->compareInputLine->setText(QStringLiteral(":/images/qt-logo-128.png"));
-    ui->benchInputLine->setText(QStringLiteral("rect-128-128-16-8-0-255"));
+    ui->benchInputLine->setText(QStringLiteral("rect-128-128-32-16-50-200"));
+
+    ui->benchResultView->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 
     connect(ui->browseButton, SIGNAL(pressed()), this, SLOT(showImageBrowser()));
     connect(ui->compareRectButton, SIGNAL(pressed()), this, SLOT(showRectDialogForCompare()));
@@ -69,7 +73,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->startBenchButton, SIGNAL(pressed()), m_progress, SLOT(show()));
     connect(ui->startBenchButton, SIGNAL(pressed()), this, SLOT(startBench()));
-
 }
 
 MainWindow::~MainWindow()
@@ -131,10 +134,14 @@ void MainWindow::startCompare()
     QString input = ui->compareInputLine->text();
     FImage image;
 
+    m_progress->setValue(2 * progressStep);
+
     if (FImage::isRectCode(input))
         image = FImage::rectangle(input);
     else
         image = FImage::createFromFile(input);
+
+    m_progress->setValue(6 * progressStep);
 
     QPixmap pixmap = QPixmap::fromImage(image);
     ui->originalImageRef->setPixmap(pixmap);
@@ -223,17 +230,73 @@ void MainWindow::startBench()
 {
     int rangeMin = ui->rangeMinSB->value();
     int rangeMax = ui->rangeMaxSB->value();
-    int iterations = ui->benchIterRB->value();
 
     Q_ASSERT(IS_POWER_OF_TWO(rangeMin));
     Q_ASSERT(IS_POWER_OF_TWO(rangeMax));
 
-    m_progress->setValue(0);
+    int sizeCount = (int)(log2(rangeMax) - log2(rangeMin) + 1);
+    if (sizeCount <= 0)
+        return;
+
+    int iterations = ui->benchIterRB->value();
+    float fourierCount = iterations * (sizeCount + 2);
+    float progressStep = 100.0 / fourierCount;
+    float progressCounter;
+
+    FT::FTType algorithm = (FT::FTType)ui->benchFtCombo->currentIndex();
+
+    QString input = ui->benchInputLine->text();
+    Q_ASSERT(FImage::isRectCode(input));
+
+    ui->benchResultView->clear();
+    progressCounter = 0.0;
+    m_progress->setValue(progressCounter);
 
     for (int size = rangeMin; size <= rangeMax; size = qNextPowerOfTwo(size)) {
+        QVector<int> results;
+        FImage rectangle = FImage::rectangle(input, QSize(size, size));
+
+        FT *fourierWarmUp = FT::createFT(algorithm, &rectangle);
+        fourierWarmUp->bench();
+        delete fourierWarmUp;
+        progressCounter += progressStep;
+        m_progress->setValue(progressCounter);
+
         for (int i = 0; i < iterations; ++i) {
-            qDebug() << size;
+            FT *fourier = FT::createFT(algorithm, &rectangle);
+            results.append(fourier->bench());
+            delete fourier;
+
+            progressCounter += progressStep;
+            m_progress->setValue(progressCounter);
         }
+
+        int result = 0;
+        if (ui->benchMinRB->isChecked())
+            result = *std::min_element(results.begin(), results.end());
+        else if (ui->benchMaxRB->isChecked())
+            result = *std::max_element(results.begin(), results.end());
+        else if (ui->benchMeanRB->isChecked()) {
+            float sum = 0.0;
+            Q_FOREACH (int r, results)
+                sum += (float)r;
+
+            result = qRound(sum / (float)results.count());
+        }
+
+        QStringList benchSum;
+        benchSum.append(QStringLiteral("%1").arg(rectangle.id()).leftJustified(28, ' '));
+        benchSum.append(QString::number(size).rightJustified(4, ' '));
+        benchSum.append(QStringLiteral("%1 ms").arg(QString::number(result).rightJustified(4, ' ')));
+
+        QStringList resultList;
+        Q_FOREACH (int r, results)
+            resultList.append(QString::number(r).rightJustified(4, ' '));
+
+        ui->benchResultView->append(QStringLiteral("%1\t%2").arg(benchSum.join(" ")).arg(resultList.join(" ")));
+
+        progressCounter += progressStep;
+        m_progress->setValue(progressCounter);
     }
 
     m_progress->setValue(100);
