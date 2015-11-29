@@ -16,6 +16,9 @@ GPU::GPU(QObject *parent)
     initDevices();
     initContext();
     initCommandQueue();
+
+    //qDebug() << CLInfo(m_clPlatform);
+    //qDebug() << CLInfo(m_clDevice);
 }
 
 GPU::~GPU()

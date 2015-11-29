@@ -26,10 +26,6 @@ __kernel void fft1DRow(__global float2 *fourier,
                        const float dir)
 {
     unsigned row = get_global_id(0);
-
-    if (row >= HEIGHT)
-        return;
-
     float2 vector[WIDTH];
 
     vector[0] = fourier[row * WIDTH];
@@ -75,10 +71,6 @@ __kernel void fft1DCol(__global float2 *fourier,
                        const float norm)
 {
     unsigned col = get_global_id(0);
-
-    if (col >= WIDTH)
-        return;
-
     float2 vector[HEIGHT];
 
     vector[0] = fourier[col];

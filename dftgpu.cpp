@@ -11,7 +11,6 @@ DFTGpu::DFTGpu(FImage *image, QObject *parent)
     if (m_gpu->hasError())
         return;
 
-    //qDebug() << CLInfo(m_gpu->getDevice());
     //qDebug() << CLInfo(m_gpu->getKernel(), m_gpu->getDevice());
 }
 
